@@ -1,7 +1,6 @@
 import 'package:core/core.dart';
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 class RecipeDetailArgs {
@@ -33,17 +32,19 @@ class RecipeDetailScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(recipe.title),
           actions: [
-            if (recipe.sourceUrl != null)
-              IconButton(
-                tooltip: 'Copy recipe URL',
-                icon: const Icon(Icons.copy),
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: recipe.sourceUrl!));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Recipe URL copied.')),
-                  );
-                },
-              ),
+            IconButton(
+              tooltip: 'Add ingredients to shopping list',
+              icon: const Icon(Icons.shopping_cart_outlined),
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                await ShoppingListStore.instance.addIngredientsFromRecipe(recipe);
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Recipe ingredients added to shopping list.'),
+                  ),
+                );
+              },
+            ),
             if (entity != null)
               IconButton(
                 tooltip:

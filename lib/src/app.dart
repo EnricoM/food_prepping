@@ -90,14 +90,16 @@ class RecipeParserApp extends StatelessWidget {
       initialRoute: _initialRoute,
       routes: {
         HomeScreen.routeName: (context) => HomeScreen(
-          openAddRecipe: () => _replaceWith(context, AddRecipeScreen.routeName),
+          openAddRecipe: () =>
+              _pushRoute(context, AddRecipeScreen.routeName),
           openManualRecipe: () =>
-              _replaceWith(context, ManualRecipeScreen.routeName),
+              _pushRoute(context, ManualRecipeScreen.routeName),
           openStoredRecipes: () =>
-              _replaceWith(context, StoredRecipesScreen.routeName),
+              _pushRoute(context, StoredRecipesScreen.routeName),
           openShoppingList: () =>
-              _replaceWith(context, ShoppingListScreen.routeName),
-          openInventory: () => _replaceWith(context, InventoryScreen.routeName),
+              _pushRoute(context, ShoppingListScreen.routeName),
+          openInventory: () =>
+              _pushRoute(context, InventoryScreen.routeName),
         ),
         AddRecipeScreen.routeName: (context) => AddRecipeScreen(
           drawer: const AppDrawer(currentRoute: AddRecipeScreen.routeName),
@@ -184,8 +186,12 @@ class RecipeParserApp extends StatelessWidget {
     );
   }
 
-  static void _replaceWith(BuildContext context, String route) {
-    Navigator.of(context).pushReplacementNamed(route);
+  static void _pushRoute(BuildContext context, String route) {
+    final current = ModalRoute.of(context)?.settings.name;
+    if (current == route) {
+      return;
+    }
+    Navigator.of(context).pushNamed(route);
   }
 }
 

@@ -48,7 +48,10 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  return _ShoppingListTile(item: item);
+                  return _ShoppingListTile(
+                    item: item,
+                    onToggle: (checked) => _handleToggle(item, checked),
+                  );
                 },
               );
             },
@@ -143,14 +146,173 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       }
     });
   }
+
+  Future<void> _handleToggle(ShoppingListItem item, bool checked) async {
+    await ShoppingListStore.instance.updateChecked(item, checked);
+    if (!checked) {
+      return;
+    }
+    if (!mounted) return;
+    final result = await _promptInventoryIntegration(item);
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    if (result is _InventoryAddRecord) {
+      await InventoryStore.instance.addItem(
+        InventoryItem(
+          name: result.name,
+          quantity: result.quantity,
+          unit: result.unit,
+          note: result.note ?? item.note,
+        ),
+      );
+      await ShoppingListStore.instance.remove(item);
+      messenger.showSnackBar(
+        SnackBar(content: Text('Added ${result.name} to inventory.')),
+      );
+    } else if (result == _PostCheckAction.remove) {
+      await ShoppingListStore.instance.remove(item);
+      messenger.showSnackBar(
+        SnackBar(content: Text('Removed "${item.ingredient}" from the list.')),
+      );
+    } else if (result == _PostCheckAction.undo) {
+      await ShoppingListStore.instance.updateChecked(item, false);
+    }
+  }
+
+  Future<dynamic> _promptInventoryIntegration(ShoppingListItem item) {
+    final nameController = TextEditingController(text: item.ingredient);
+    final quantityController = TextEditingController(text: '1');
+    final unitController = TextEditingController();
+    return showModalBottomSheet<dynamic>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final bottomInset = MediaQuery.of(sheetContext).viewInsets.bottom;
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: bottomInset + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Add to inventory?',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Item name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: quantityController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Quantity',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: unitController,
+                      decoration: const InputDecoration(
+                        labelText: 'Unit (optional)',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: () {
+                  final name = nameController.text.trim().isEmpty
+                      ? item.ingredient
+                      : nameController.text.trim();
+                  final quantity = double.tryParse(
+                        quantityController.text
+                            .trim()
+                            .replaceAll(',', '.'),
+                      ) ??
+                      1;
+                  final unit = unitController.text.trim().isEmpty
+                      ? null
+                      : unitController.text.trim();
+                  Navigator.of(sheetContext).pop(
+                    _InventoryAddRecord(
+                      name: name,
+                      quantity: quantity,
+                      unit: unit,
+                      note: item.note,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.inventory_2_outlined),
+                label: const Text('Add to inventory & remove'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(sheetContext)
+                    .pop(_PostCheckAction.remove),
+                icon: const Icon(Icons.remove_circle_outline),
+                label: const Text('Remove from list'),
+              ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(sheetContext).pop(_PostCheckAction.keep),
+                child: const Text('Keep checked'),
+              ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(sheetContext).pop(_PostCheckAction.undo),
+                child: const Text('Undo check'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 enum _AddMenuAction { manual, receipt, barcode }
 
+enum _PostCheckAction { keep, remove, undo }
+
+class _InventoryAddRecord {
+  _InventoryAddRecord({
+    required this.name,
+    required this.quantity,
+    this.unit,
+    this.note,
+  });
+
+  final String name;
+  final double quantity;
+  final String? unit;
+  final String? note;
+}
+
 class _ShoppingListTile extends StatelessWidget {
-  const _ShoppingListTile({required this.item});
+  const _ShoppingListTile({required this.item, required this.onToggle});
 
   final ShoppingListItem item;
+  final ValueChanged<bool> onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -175,9 +337,7 @@ class _ShoppingListTile extends StatelessWidget {
       onDismissed: (_) => ShoppingListStore.instance.remove(item),
       child: CheckboxListTile(
         value: item.isChecked,
-        onChanged: (value) {
-          ShoppingListStore.instance.updateChecked(item, value ?? false);
-        },
+        onChanged: (value) => onToggle(value ?? false),
         title: Text(item.ingredient),
         subtitle: subtitle.isEmpty ? null : Text(subtitle),
         controlAffinity: ListTileControlAffinity.leading,

@@ -334,8 +334,15 @@ class _MealDayEditorState extends State<_MealDayEditor> {
               onPressed: widget.selectedRecipes.isEmpty
                   ? null
                   : _addToShoppingList,
-              icon: const Icon(Icons.shopping_cart_outlined),
+              icon: const Icon(Icons.shopping_cart_checkout_outlined),
               label: const Text('Add to shopping list'),
+            ),
+            OutlinedButton.icon(
+              onPressed: widget.selectedRecipes.isEmpty
+                  ? null
+                  : _reviewInventoryAvailability,
+              icon: const Icon(Icons.inventory_outlined),
+              label: const Text('Inventory check'),
             ),
           ],
         ),
@@ -496,6 +503,172 @@ class _MealDayEditorState extends State<_MealDayEditor> {
       SnackBar(
         content: Text('Added ingredients from ${recipes.length} recipe(s).'),
       ),
+    );
+  }
+
+  Future<void> _reviewInventoryAvailability() async {
+    final inventoryItems = InventoryStore.instance.items().toList();
+    final reservationCounts = <InventoryItem, int>{};
+    final missingIngredients = <String>{};
+
+    InventoryItem? matchFor(String ingredient) {
+      final normalizedIngredient = _normalize(ingredient);
+      for (final item in inventoryItems) {
+        final normalizedItem = _normalize(item.name);
+        if (normalizedItem.isEmpty) continue;
+        if (normalizedIngredient.contains(normalizedItem) ||
+            normalizedItem.contains(normalizedIngredient)) {
+          return item;
+        }
+      }
+      return null;
+    }
+
+    for (final recipeList in widget.selectedRecipes.values) {
+      for (final entity in recipeList) {
+        for (final ingredient in entity.ingredients) {
+          final item = matchFor(ingredient);
+          if (item != null) {
+            reservationCounts[item] = (reservationCounts[item] ?? 0) + 1;
+          } else {
+            missingIngredients.add(ingredient);
+          }
+        }
+      }
+    }
+
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final missing = missingIngredients.toList()..sort();
+        final matched = reservationCounts.entries
+            .map(
+              (entry) => _InventoryMatchSummary(
+                item: entry.key,
+                count: entry.value,
+              ),
+            )
+            .toList()
+          ..sort((a, b) => a.item.name.compareTo(b.item.name));
+
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Inventory availability',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                if (matched.isNotEmpty) ...[
+                  Text(
+                    'Matched ingredients (reserved count shown):',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  ...matched.map(
+                    (summary) => ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(summary.item.name),
+                      subtitle: Text(
+                        'Available: ${summary.item.quantity.toStringAsFixed(summary.item.quantity.truncateToDouble() == summary.item.quantity ? 0 : 1)} ${summary.item.unit ?? ''}'.trim(),
+                      ),
+                      trailing: Text('×${summary.count}'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  Text(
+                    'No assigned ingredients match current inventory items.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (missing.isNotEmpty) ...[
+                  Text(
+                    'Missing from inventory:',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  ...missing.map(
+                    (ingredient) => ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(ingredient),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () async {
+                      Navigator.of(sheetContext).pop();
+                      await ShoppingListStore.instance.addItems(
+                        missing
+                            .map(
+                              (ingredient) => ShoppingListItem(
+                                ingredient: ingredient,
+                                note: 'Meal plan ${widget.day.date.toLocal().toIso8601String().substring(0, 10)}',
+                              ),
+                            )
+                            .toList(growable: false),
+                      );
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Added ${missing.length} missing items to shopping list.',
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.playlist_add),
+                    label: const Text('Add missing items to shopping list'),
+                  ),
+                  const SizedBox(height: 12),
+                ] else ...[
+                  Text(
+                    'All ingredients are accounted for in inventory.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (matched.isNotEmpty)
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      Navigator.of(sheetContext).pop();
+                      for (final summary in matched) {
+                        await InventoryStore.instance.adjustQuantity(
+                          summary.item,
+                          -summary.count.toDouble(),
+                        );
+                      }
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Reserved ingredients in inventory.'),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.inventory_2_outlined),
+                    label: const Text('Reserve matched in inventory'),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -788,6 +961,14 @@ String _capitalize(String value) {
   return value[0].toUpperCase() + value.substring(1);
 }
 
+String _normalize(String value) {
+  return value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+}
+
 String _ingredientsPreviewText(Recipe recipe, {int maxCount = 3}) {
   final ingredients = recipe.ingredients;
   if (ingredients.isEmpty) {
@@ -797,4 +978,11 @@ String _ingredientsPreviewText(Recipe recipe, {int maxCount = 3}) {
   final remaining = ingredients.length - preview.length;
   final suffix = remaining > 0 ? ' +$remaining more' : '';
   return preview.join(', ') + suffix;
+}
+
+class _InventoryMatchSummary {
+  _InventoryMatchSummary({required this.item, required this.count});
+
+  final InventoryItem item;
+  final int count;
 }

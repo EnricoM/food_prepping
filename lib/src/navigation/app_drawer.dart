@@ -183,8 +183,13 @@ class _DrawerTile extends StatelessWidget {
       selected: isSelected,
       onTap: () {
         Navigator.of(context).pop();
-        if (!isSelected) {
-          Navigator.of(context).pushReplacementNamed(routeName);
+        if (isSelected) {
+          return;
+        }
+        if (routeName == '/home') {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        } else {
+          Navigator.of(context).pushNamed(routeName);
         }
       },
     );

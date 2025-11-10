@@ -38,100 +38,134 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
       appBar: AppBar(title: const Text('Filter recipes')),
       drawer: widget.drawer ?? const AppDrawer(currentRoute: FilterRecipesScreen.routeName),
       body: SafeArea(
-        child: Padding(
-          padding: inset,
-          child: Column(
-            children: [
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  labelText: 'Search by name or ingredient',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: _searchController.text.isEmpty
-                      ? const Icon(Icons.search)
-                      : IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            setState(() {
-                              _searchController.clear();
-                            });
-                          },
-                        ),
-                ),
-                onChanged: (_) => setState(() {}),
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                inset.left,
+                inset.top,
+                inset.right,
+                0,
               ),
-              const SizedBox(height: 16),
-              ValueListenableBuilder<Box<RecipeEntity>>(
-                valueListenable: RecipeStore.instance.listenable(),
-                builder: (context, box, _) {
-                  final categories = RecipeStore.instance
-                      .allCategories()
-                      .map((e) => e.toLowerCase())
-                      .toSet();
-                  final sortedCategories = categories.toList()..sort();
-                  return Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: sortedCategories
-                        .map(
-                          (category) => FilterChip(
-                            label: Text(category),
-                            selected: _selectedCategories.contains(category),
-                            onSelected: (selected) {
+              sliver: SliverToBoxAdapter(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Search by name or ingredient',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _searchController.text.isEmpty
+                        ? const Icon(Icons.search)
+                        : IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
                               setState(() {
-                                if (selected) {
-                                  _selectedCategories.add(category);
-                                } else {
-                                  _selectedCategories.remove(category);
-                                }
+                                _searchController.clear();
                               });
                             },
                           ),
-                        )
-                        .toList(),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ValueListenableBuilder<Box<RecipeEntity>>(
-                  valueListenable: RecipeStore.instance.listenable(),
-                  builder: (context, box, _) {
-                    final query = _searchController.text.trim().toLowerCase();
-                    final categories = _selectedCategories;
-                    final items = box.values
-                        .where(
-                          (entity) => entity.matchesFilters(
-                            query: query,
-                            selectedCategories: categories,
-                          ),
-                        )
-                        .toList()
-                      ..sort(
-                        (a, b) =>
-                            a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-                      );
-                    if (items.isEmpty) {
-                      return const Center(
-                        child: Text('No recipes match your filters yet.'),
-                      );
-                    }
-                    return ListView.separated(
-                      itemCount: items.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final entity = items[index];
-                        return _FilterResultTile(
-                          entity: entity,
-                          onTap: () => widget.onRecipeTap(context, entity),
-                        );
-                      },
-                    );
-                  },
+                  ),
+                  onChanged: (_) => setState(() {}),
                 ),
               ),
-            ],
-          ),
+            ),
+            ValueListenableBuilder<Box<RecipeEntity>>(
+              valueListenable: RecipeStore.instance.listenable(),
+              builder: (context, box, _) {
+                final categories = RecipeStore.instance
+                    .allCategories()
+                    .map((e) => e.toLowerCase())
+                    .toSet();
+                final sortedCategories = categories.toList()..sort();
+                if (sortedCategories.isEmpty) {
+                  return const SliverToBoxAdapter(child: SizedBox.shrink());
+                }
+                return SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    inset.left,
+                    16,
+                    inset.right,
+                    0,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: sortedCategories
+                          .map(
+                            (category) => FilterChip(
+                              label: Text(category),
+                              selected: _selectedCategories.contains(category),
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    _selectedCategories.add(category);
+                                  } else {
+                                    _selectedCategories.remove(category);
+                                  }
+                                });
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                );
+              },
+            ),
+            ValueListenableBuilder<Box<RecipeEntity>>(
+              valueListenable: RecipeStore.instance.listenable(),
+              builder: (context, box, _) {
+                final query = _searchController.text.trim().toLowerCase();
+                final categories = _selectedCategories;
+                final items = box.values
+                    .where(
+                      (entity) => entity.matchesFilters(
+                        query: query,
+                        selectedCategories: categories,
+                      ),
+                    )
+                    .toList()
+                  ..sort(
+                    (a, b) =>
+                        a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+                  );
+                if (items.isEmpty) {
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: EdgeInsets.only(top: inset.bottom + 32),
+                      child: const Center(
+                        child: Text('No recipes match your filters yet.'),
+                      ),
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    inset.left,
+                    16,
+                    inset.right,
+                    inset.bottom,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final entity = items[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _FilterResultTile(
+                            entity: entity,
+                            onTap: () => widget.onRecipeTap(context, entity),
+                          ),
+                        );
+                      },
+                      childCount: items.length,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
