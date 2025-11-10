@@ -1,0 +1,11 @@
+name: recipe_parser
+packages:
+  - packages/**
+  - .
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+scripts:
+  format: dart format .
+  analyze: flutter analyze
