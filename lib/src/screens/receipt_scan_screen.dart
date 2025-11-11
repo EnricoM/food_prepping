@@ -268,7 +268,7 @@ class _ReceiptScanScreenState extends State<ReceiptScanScreen> {
               entry.quantityController.text.trim().replaceAll(',', '.'),
             ) ??
             1;
-        await InventoryStore.instance.addItem(
+        await AppRepositories.instance.inventory.addItem(
           InventoryItem(
             name: entry.nameController.text.trim(),
             quantity: quantity,
@@ -292,7 +292,7 @@ class _ReceiptScanScreenState extends State<ReceiptScanScreen> {
             ),
           )
           .toList(growable: false);
-      await ShoppingListStore.instance.addItems(items);
+      await AppRepositories.instance.shoppingList.addItems(items);
     }
 
     if (!mounted) return;

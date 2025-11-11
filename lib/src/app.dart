@@ -90,16 +90,14 @@ class RecipeParserApp extends StatelessWidget {
       initialRoute: _initialRoute,
       routes: {
         HomeScreen.routeName: (context) => HomeScreen(
-          openAddRecipe: () =>
-              _pushRoute(context, AddRecipeScreen.routeName),
+          openAddRecipe: () => _pushRoute(context, AddRecipeScreen.routeName),
           openManualRecipe: () =>
               _pushRoute(context, ManualRecipeScreen.routeName),
           openStoredRecipes: () =>
               _pushRoute(context, StoredRecipesScreen.routeName),
           openShoppingList: () =>
               _pushRoute(context, ShoppingListScreen.routeName),
-          openInventory: () =>
-              _pushRoute(context, InventoryScreen.routeName),
+          openInventory: () => _pushRoute(context, InventoryScreen.routeName),
         ),
         AddRecipeScreen.routeName: (context) => AddRecipeScreen(
           drawer: const AppDrawer(currentRoute: AddRecipeScreen.routeName),

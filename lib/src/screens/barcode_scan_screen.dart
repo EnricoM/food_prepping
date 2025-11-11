@@ -172,7 +172,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
 
   Future<void> _addProduct(BarcodeProduct product) async {
     if (widget.target == BarcodeScanTarget.inventory) {
-      await InventoryStore.instance.addItem(
+      await AppRepositories.instance.inventory.addItem(
         InventoryItem(
           name: product.displayTitle,
           quantity: 1,
@@ -183,7 +183,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
         ),
       );
     } else {
-      await ShoppingListStore.instance.addItems([
+      await AppRepositories.instance.shoppingList.addItems([
         ShoppingListItem(
           ingredient: product.displayTitle,
           note: product.quantity,

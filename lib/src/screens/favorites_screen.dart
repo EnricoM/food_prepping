@@ -1,6 +1,5 @@
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
@@ -27,13 +26,12 @@ class FavoritesScreen extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: inset,
-          child: ValueListenableBuilder<Box<RecipeEntity>>(
-            valueListenable: RecipeStore.instance.listenable(),
-            builder: (context, box, _) {
-              final favourites = box.values
-                  .where((entity) => entity.isFavorite)
-                  .toList(growable: false)
-                ..sort(
+          child: StreamBuilder<List<RecipeEntity>>(
+            stream: AppRepositories.instance.recipes.watchFavorites(),
+            builder: (context, snapshot) {
+              final favourites = List<RecipeEntity>.from(
+                snapshot.data ?? const <RecipeEntity>[],
+              )..sort(
                   (a, b) =>
                       a.title.toLowerCase().compareTo(b.title.toLowerCase()),
                 );
@@ -50,8 +48,8 @@ class FavoritesScreen extends StatelessWidget {
                   return RecipeListTile(
                     entity: entity,
                     onTap: () => onRecipeTap(context, entity),
-                    onToggleFavorite: () =>
-                        RecipeStore.instance.toggleFavorite(entity.url),
+                    onToggleFavorite: () => AppRepositories.instance.recipes
+                        .toggleFavorite(entity.url),
                   );
                 },
               );

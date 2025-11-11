@@ -35,8 +35,8 @@ class RecipeListTile extends StatelessWidget {
                     Text(
                       recipe.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     if (recipe.description != null &&
                         recipe.description!.isNotEmpty)
@@ -53,10 +53,9 @@ class RecipeListTile extends StatelessWidget {
                       ingredientsPreview(recipe),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.black54),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.black54),
                     ),
                     if (entity.normalizedCategories.isNotEmpty)
                       Padding(
@@ -74,8 +73,9 @@ class RecipeListTile extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip:
-                    entity.isFavorite ? 'Remove favourite' : 'Add to favourites',
+                tooltip: entity.isFavorite
+                    ? 'Remove favourite'
+                    : 'Add to favourites',
                 icon: Icon(
                   entity.isFavorite ? Icons.star : Icons.star_border,
                   color: entity.isFavorite

@@ -1,6 +1,5 @@
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
@@ -68,11 +67,13 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
                 ),
               ),
             ),
-            ValueListenableBuilder<Box<RecipeEntity>>(
-              valueListenable: RecipeStore.instance.listenable(),
-              builder: (context, box, _) {
-                final categories = RecipeStore.instance
-                    .allCategories()
+            StreamBuilder<List<RecipeEntity>>(
+              stream: AppRepositories.instance.recipes.watchAll(),
+              builder: (context, snapshot) {
+                final categories = (snapshot.data ?? const <RecipeEntity>[])
+                    .expand(
+                      (entity) => entity.normalizedCategories,
+                    )
                     .map((e) => e.toLowerCase())
                     .toSet();
                 final sortedCategories = categories.toList()..sort();
@@ -112,12 +113,12 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
                 );
               },
             ),
-            ValueListenableBuilder<Box<RecipeEntity>>(
-              valueListenable: RecipeStore.instance.listenable(),
-              builder: (context, box, _) {
+            StreamBuilder<List<RecipeEntity>>(
+              stream: AppRepositories.instance.recipes.watchAll(),
+              builder: (context, snapshot) {
                 final query = _searchController.text.trim().toLowerCase();
                 final categories = _selectedCategories;
-                final items = box.values
+                final items = (snapshot.data ?? const <RecipeEntity>[])
                     .where(
                       (entity) => entity.matchesFilters(
                         query: query,

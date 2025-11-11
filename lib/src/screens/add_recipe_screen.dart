@@ -71,13 +71,27 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
             children: [
               TextField(
                 controller: _urlController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Recipe URL',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: _urlController.text.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: 'Clear URL',
+                          onPressed: () {
+                            _urlController.clear();
+                            setState(() {
+                              _result = null;
+                              _error = null;
+                            });
+                          },
+                        ),
                 ),
                 keyboardType: TextInputType.url,
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _parseUrl(),
+                onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
@@ -154,12 +168,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     final scaffold = ScaffoldMessenger.of(context);
     final url = _urlController.text.trim();
     try {
-      await RecipeStore.instance.saveRecipe(result: result, url: url);
+      final repositories = AppRepositories.instance;
+      await repositories.recipes
+          .saveParsedRecipe(result: result, url: url);
       if (!mounted) return;
       final key = result.recipe.sourceUrl?.isNotEmpty == true
           ? result.recipe.sourceUrl!
           : url;
-      final entity = RecipeStore.instance.entityFor(key);
+      final entity = repositories.recipes.entityFor(key);
       scaffold.showSnackBar(
         const SnackBar(content: Text('Recipe saved to your library.')),
       );

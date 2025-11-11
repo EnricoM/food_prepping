@@ -55,9 +55,8 @@ class RecipeEntity extends HiveObject {
       .toList(growable: false);
 
   List<String> get effectiveCategories {
-    final baseCategories = categories.isNotEmpty
-        ? categories
-        : _extractCategories(_metadataMap);
+    final baseCategories =
+        categories.isNotEmpty ? categories : _extractCategories(_metadataMap);
     final augmented = <String>{...baseCategories};
     if (country != null && country!.isNotEmpty) {
       augmented.add(country!);
@@ -99,9 +98,8 @@ class RecipeEntity extends HiveObject {
     if (selectedCategories.isEmpty) {
       return matchesQuery;
     }
-    final normalized = normalizedCategories
-        .map((category) => category.toLowerCase())
-        .toSet();
+    final normalized =
+        normalizedCategories.map((category) => category.toLowerCase()).toSet();
     final matchesCategory = normalized.any(selectedCategories.contains);
     return matchesQuery && matchesCategory;
   }
@@ -444,8 +442,7 @@ _Location _inferLocation({
     }
   }
 
-  final continent =
-      country != null ? _countryToContinent[country] : null;
+  final continent = country != null ? _countryToContinent[country] : null;
 
   return _Location(country: country, continent: continent);
 }

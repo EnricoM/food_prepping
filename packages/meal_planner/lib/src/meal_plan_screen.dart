@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:core/core.dart';
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_ui/shared_ui.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -37,106 +36,119 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
       appBar: AppBar(title: const Text('Meal planner')),
       drawer: widget.drawer,
       body: SafeArea(
-        child: ValueListenableBuilder<Box<MealPlanDayEntity>>(
-          valueListenable: MealPlanStore.instance.listenable(),
-          builder: (context, box, _) {
-            final plansByDay = MealPlanStore.instance.asMap();
-            final selectedPlan = MealPlanStore.instance.dayFor(_selectedDay);
-            final allRecipes = RecipeStore.instance.allEntities()
-              ..sort(
-                (a, b) =>
-                    a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-              );
+        child: StreamBuilder<Map<DateTime, MealPlanDayEntity>>(
+          stream: AppRepositories.instance.mealPlans.watchAll(),
+          builder: (context, planSnapshot) {
+            final plansByDay =
+                planSnapshot.data ?? <DateTime, MealPlanDayEntity>{};
+            final selectedPlan =
+                AppRepositories.instance.mealPlans.dayFor(_selectedDay);
+            return StreamBuilder<List<RecipeEntity>>(
+              stream: AppRepositories.instance.recipes.watchAll(),
+              builder: (context, recipeSnapshot) {
+                final allRecipes = List<RecipeEntity>.from(
+                  recipeSnapshot.data ?? const <RecipeEntity>[],
+                )..sort(
+                    (a, b) =>
+                        a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+                  );
 
-            final selectedBySlot = <MealSlot, List<RecipeEntity>>{};
-            for (final entry in selectedPlan.meals.entries) {
-              final recipesForSlot = <RecipeEntity>[];
-              for (final url in entry.value) {
-                final entity = RecipeStore.instance.entityFor(url);
-                if (entity != null) {
-                  recipesForSlot.add(entity);
+                final selectedBySlot = <MealSlot, List<RecipeEntity>>{};
+                for (final entry in selectedPlan.meals.entries) {
+                  final recipesForSlot = <RecipeEntity>[];
+                  for (final url in entry.value) {
+                    final entity =
+                        AppRepositories.instance.recipes.entityFor(url);
+                    if (entity != null) {
+                      recipesForSlot.add(entity);
+                    }
+                  }
+                  if (recipesForSlot.isNotEmpty) {
+                    selectedBySlot[entry.key] = recipesForSlot;
+                  }
                 }
-              }
-              if (recipesForSlot.isNotEmpty) {
-                selectedBySlot[entry.key] = recipesForSlot;
-              }
-            }
 
-            final sharedIngredients = _sharedIngredientCounts(
-              selectedBySlot.values.expand((recipes) => recipes),
-            );
-            final suggestions = _recommendedRecipes(
-              allRecipes,
-              selectedBySlot,
-              sharedIngredients,
-            );
+                final sharedIngredients = _sharedIngredientCounts(
+                  selectedBySlot.values.expand((recipes) => recipes),
+                );
+                final suggestions = _recommendedRecipes(
+                  allRecipes,
+                  selectedBySlot,
+                  sharedIngredients,
+                );
 
-            return Column(
-              children: [
-                Card(
-                  margin: const EdgeInsets.all(16),
-                  child: TableCalendar<MealPlanDayEntity>(
-                    firstDay: DateTime.now().subtract(
-                      const Duration(days: 365 * 2),
-                    ),
-                    lastDay: DateTime.now().add(const Duration(days: 365 * 5)),
-                    focusedDay: _focusedDay,
-                    calendarFormat: _calendarFormat,
-                    selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                    onDaySelected: (selectedDay, focusedDay) {
-                      setState(() {
-                        _selectedDay = DateUtils.dateOnly(selectedDay);
-                        _focusedDay = focusedDay;
-                      });
-                    },
-                    onFormatChanged: (format) {
-                      setState(() => _calendarFormat = format);
-                    },
-                    eventLoader: (day) {
-                      final normalized = DateUtils.dateOnly(day);
-                      final entity = plansByDay[normalized];
-                      if (entity == null || entity.isEmpty) return const [];
-                      return [entity];
-                    },
-                    startingDayOfWeek: StartingDayOfWeek.monday,
-                    calendarStyle: CalendarStyle(
-                      todayDecoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
+                return Column(
+                  children: [
+                    Card(
+                      margin: const EdgeInsets.all(16),
+                      child: TableCalendar<MealPlanDayEntity>(
+                        firstDay: DateTime.now().subtract(
+                          const Duration(days: 365 * 2),
+                        ),
+                        lastDay: DateTime.now().add(
+                          const Duration(days: 365 * 5),
+                        ),
+                        focusedDay: _focusedDay,
+                        calendarFormat: _calendarFormat,
+                        selectedDayPredicate: (day) =>
+                            isSameDay(day, _selectedDay),
+                        onDaySelected: (selectedDay, focusedDay) {
+                          setState(() {
+                            _selectedDay = DateUtils.dateOnly(selectedDay);
+                            _focusedDay = focusedDay;
+                          });
+                        },
+                        onFormatChanged: (format) {
+                          setState(() => _calendarFormat = format);
+                        },
+                        eventLoader: (day) {
+                          final normalized = DateUtils.dateOnly(day);
+                          final entity = plansByDay[normalized];
+                          if (entity == null || entity.isEmpty) return const [];
+                          return [entity];
+                        },
+                        startingDayOfWeek: StartingDayOfWeek.monday,
+                        calendarStyle: CalendarStyle(
+                          todayDecoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          selectedDecoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          markerDecoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.secondary,
+                            shape: BoxShape.circle,
+                          ),
+                          markersAlignment: Alignment.bottomRight,
+                        ),
+                        headerStyle: const HeaderStyle(
+                          formatButtonVisible: true,
+                          titleCentered: true,
+                        ),
                       ),
-                      selectedDecoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: BoxShape.circle,
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding:
+                            widget.pageInsetsBuilder(context).copyWith(top: 0),
+                        child: _MealDayEditor(
+                          key: ValueKey(_selectedDay),
+                          day: selectedPlan,
+                          allRecipes: allRecipes,
+                          selectedRecipes: selectedBySlot,
+                          sharedIngredients: sharedIngredients,
+                          suggestions: suggestions,
+                          onRecipeSelected: widget.onRecipeSelected,
+                        ),
                       ),
-                      markerDecoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondary,
-                        shape: BoxShape.circle,
-                      ),
-                      markersAlignment: Alignment.bottomRight,
                     ),
-                    headerStyle: const HeaderStyle(
-                      formatButtonVisible: true,
-                      titleCentered: true,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: widget.pageInsetsBuilder(context).copyWith(top: 0),
-                    child: _MealDayEditor(
-                      key: ValueKey(_selectedDay),
-                      day: selectedPlan,
-                      allRecipes: allRecipes,
-                      selectedRecipes: selectedBySlot,
-                      sharedIngredients: sharedIngredients,
-                      suggestions: suggestions,
-                      onRecipeSelected: widget.onRecipeSelected,
-                    ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             );
           },
         ),
@@ -326,7 +338,8 @@ class _MealDayEditorState extends State<_MealDayEditor> {
             OutlinedButton.icon(
               onPressed: widget.day.isEmpty
                   ? null
-                  : () => MealPlanStore.instance.deleteDay(widget.day.date),
+                  : () => AppRepositories.instance.mealPlans
+                      .deleteDay(widget.day.date),
               icon: const Icon(Icons.delete_outline),
               label: const Text('Clear day'),
             ),
@@ -445,9 +458,8 @@ class _MealDayEditorState extends State<_MealDayEditor> {
   }
 
   Future<void> _copyPreviousDay() async {
-    final previous = MealPlanStore.instance.copyPreviousAvailable(
-      widget.day.date,
-    );
+    final previous = AppRepositories.instance.mealPlans
+        .copyPreviousAvailable(widget.day.date);
     if (previous.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -455,18 +467,18 @@ class _MealDayEditorState extends State<_MealDayEditor> {
       );
       return;
     }
-    await MealPlanStore.instance.setMeals(
+    await AppRepositories.instance.mealPlans.setMeals(
       date: widget.day.date,
       meals: previous.meals,
     );
-    await MealPlanStore.instance.setNotes(
+    await AppRepositories.instance.mealPlans.setNotes(
       date: widget.day.date,
       notes: previous.notes,
     );
   }
 
   Future<void> _addMeal(MealSlot slot, String recipeUrl) async {
-    await MealPlanStore.instance.addMeal(
+    await AppRepositories.instance.mealPlans.addMeal(
       date: widget.day.date,
       slot: slot,
       recipeUrl: recipeUrl,
@@ -474,7 +486,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
   }
 
   Future<void> _removeMeal(MealSlot slot, String recipeUrl) async {
-    await MealPlanStore.instance.removeMeal(
+    await AppRepositories.instance.mealPlans.removeMeal(
       date: widget.day.date,
       slot: slot,
       recipeUrl: recipeUrl,
@@ -482,7 +494,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
   }
 
   Future<void> _clearSlot(MealSlot slot) async {
-    await MealPlanStore.instance.setMeal(
+    await AppRepositories.instance.mealPlans.setMeal(
       date: widget.day.date,
       slot: slot,
       recipeUrl: null,
@@ -498,7 +510,8 @@ class _MealDayEditorState extends State<_MealDayEditor> {
       );
       return;
     }
-    await ShoppingListStore.instance.addIngredientsFromEntities(recipes);
+    await AppRepositories.instance.shoppingList
+        .addIngredientsFromEntities(recipes);
     messenger.showSnackBar(
       SnackBar(
         content: Text('Added ingredients from ${recipes.length} recipe(s).'),
@@ -507,7 +520,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
   }
 
   Future<void> _reviewInventoryAvailability() async {
-    final inventoryItems = InventoryStore.instance.items().toList();
+    final inventoryItems = AppRepositories.instance.inventory.getAll();
     final reservationCounts = <InventoryItem, int>{};
     final missingIngredients = <String>{};
 
@@ -610,7 +623,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
                   FilledButton.icon(
                     onPressed: () async {
                       Navigator.of(sheetContext).pop();
-                      await ShoppingListStore.instance.addItems(
+                      await AppRepositories.instance.shoppingList.addItems(
                         missing
                             .map(
                               (ingredient) => ShoppingListItem(
@@ -645,7 +658,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
                     onPressed: () async {
                       Navigator.of(sheetContext).pop();
                       for (final summary in matched) {
-                        await InventoryStore.instance.adjustQuantity(
+                        await AppRepositories.instance.inventory.adjustQuantity(
                           summary.item,
                           -summary.count.toDouble(),
                         );
@@ -675,7 +688,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
   void _handleNotesChanged(String value) {
     _notesDebounce?.cancel();
     _notesDebounce = Timer(const Duration(milliseconds: 500), () {
-      MealPlanStore.instance.setNotes(
+      AppRepositories.instance.mealPlans.setNotes(
         date: widget.day.date,
         notes: value.trim().isEmpty ? null : value.trim(),
       );

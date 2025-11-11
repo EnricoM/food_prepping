@@ -37,7 +37,8 @@ class RecipeDetailScreen extends StatelessWidget {
               icon: const Icon(Icons.shopping_cart_outlined),
               onPressed: () async {
                 final messenger = ScaffoldMessenger.of(context);
-                await ShoppingListStore.instance.addIngredientsFromRecipe(recipe);
+                await AppRepositories.instance.shoppingList
+                    .addIngredientsFromRecipe(recipe);
                 messenger.showSnackBar(
                   const SnackBar(
                     content: Text('Recipe ingredients added to shopping list.'),
@@ -58,7 +59,8 @@ class RecipeDetailScreen extends StatelessWidget {
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
                   final becomingFavorite = !entity.isFavorite;
-                  await RecipeStore.instance.toggleFavorite(entity.url);
+                  await AppRepositories.instance.recipes
+                      .toggleFavorite(entity.url);
                   messenger.showSnackBar(
                     SnackBar(
                       content: Text(
@@ -165,7 +167,8 @@ class _OverviewTab extends StatelessWidget {
           FilledButton.icon(
             onPressed: () async {
               final messenger = ScaffoldMessenger.of(context);
-              await ShoppingListStore.instance.addIngredientsFromRecipe(recipe);
+              await AppRepositories.instance.shoppingList
+                  .addIngredientsFromRecipe(recipe);
               messenger.showSnackBar(
                 const SnackBar(
                   content: Text('Recipe ingredients added to shopping list.'),

@@ -386,13 +386,13 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
         totalTime: _computeTotalTime(),
         metadata: metadata,
       );
-      final savedUrl = await RecipeStore.instance.saveManualRecipe(
+      final savedUrl = await AppRepositories.instance.recipes.saveManualRecipe(
         recipe: recipe,
         categories: _categories,
         isFavorite: _isFavorite,
       );
       if (!mounted) return;
-      final entity = RecipeStore.instance.entityFor(savedUrl);
+      final entity = AppRepositories.instance.recipes.entityFor(savedUrl);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Manual recipe saved.')),
       );

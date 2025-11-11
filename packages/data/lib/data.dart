@@ -7,3 +7,8 @@ export 'src/shopping_list_entity.dart';
 export 'src/shopping_list_store.dart';
 export 'src/inventory_item.dart';
 export 'src/inventory_store.dart';
+export 'src/repositories/inventory_repository.dart';
+export 'src/repositories/meal_plan_repository.dart';
+export 'src/repositories/recipe_repository.dart';
+export 'src/repositories/repositories.dart';
+export 'src/repositories/shopping_list_repository.dart';

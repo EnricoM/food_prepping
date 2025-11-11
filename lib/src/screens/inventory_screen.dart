@@ -1,6 +1,5 @@
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_ui/shared_ui.dart';
 
@@ -36,10 +35,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
       body: SafeArea(
         child: Padding(
           padding: inset,
-          child: ValueListenableBuilder<Box<InventoryItem>>(
-            valueListenable: InventoryStore.instance.listenable(),
-            builder: (context, box, _) {
-              final items = box.values.toList(growable: false)
+          child: StreamBuilder<List<InventoryItem>>(
+            stream: AppRepositories.instance.inventory.watchAll(),
+            builder: (context, snapshot) {
+              final items = List<InventoryItem>.from(
+                snapshot.data ?? const <InventoryItem>[],
+              )
                 ..sort((a, b) => a.isLowStock == b.isLowStock
                     ? a.name.toLowerCase().compareTo(b.name.toLowerCase())
                     : (a.isLowStock ? -1 : 1));
@@ -157,10 +158,12 @@ class _InventoryTile extends StatelessWidget {
         color: theme.colorScheme.errorContainer,
         child: Icon(Icons.delete_outline, color: theme.colorScheme.error),
       ),
-      onDismissed: (_) => InventoryStore.instance.remove(item),
+      onDismissed: (_) =>
+          AppRepositories.instance.inventory.remove(item),
       child: InkWell(
         onTap: onEdit,
-        onLongPress: () => InventoryStore.instance.toggleLowStock(item),
+        onLongPress: () =>
+            AppRepositories.instance.inventory.toggleLowStock(item),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           child: Row(
@@ -233,8 +236,8 @@ class _InventoryTile extends StatelessWidget {
                           iconSize: 20,
                           visualDensity: VisualDensity.compact,
                           icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () => InventoryStore.instance
-                              .adjustQuantity(item, -1),
+                        onPressed: () => AppRepositories.instance.inventory
+                            .adjustQuantity(item, -1),
                         ),
                         IconButton(
                           tooltip: 'Increase quantity',
@@ -246,8 +249,11 @@ class _InventoryTile extends StatelessWidget {
                           iconSize: 20,
                           visualDensity: VisualDensity.compact,
                           icon: const Icon(Icons.add_circle_outline),
-                          onPressed: () =>
-                              InventoryStore.instance.adjustQuantity(item, 1),
+                        onPressed: () =>
+                            AppRepositories.instance.inventory.adjustQuantity(
+                              item,
+                              1,
+                            ),
                         ),
                       ],
                     ),
@@ -460,7 +466,7 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
     final quantity = double.tryParse(_quantityController.text.trim()) ?? 1;
     final item = widget.item;
     if (item == null) {
-      await InventoryStore.instance.addItem(
+      await AppRepositories.instance.inventory.addItem(
         InventoryItem(
           name: _nameController.text.trim(),
           quantity: quantity,
@@ -480,7 +486,7 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
         ),
       );
     } else {
-      await InventoryStore.instance.upsertItem(
+      await AppRepositories.instance.inventory.upsertItem(
         item: item,
         name: _nameController.text.trim(),
         quantity: quantity,
@@ -539,7 +545,7 @@ class _InventoryMenu extends StatelessWidget {
               ),
             );
             if (confirmed == true) {
-              await InventoryStore.instance.clear();
+              await AppRepositories.instance.inventory.clear();
             }
             break;
         }
@@ -558,10 +564,10 @@ class _InventoryMenu extends StatelessWidget {
   }
 
   Future<void> _markLowStockAll() async {
-    final store = InventoryStore.instance;
-    for (final item in store.items()) {
+    final repository = AppRepositories.instance.inventory;
+    for (final item in repository.getAll()) {
       if (item.quantity <= 1 && !item.isLowStock) {
-        await store.toggleLowStock(item);
+        await repository.toggleLowStock(item);
       }
     }
   }

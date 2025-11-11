@@ -1,6 +1,5 @@
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
@@ -27,12 +26,14 @@ class StoredRecipesScreen extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: inset,
-          child: ValueListenableBuilder<Box<RecipeEntity>>(
-            valueListenable: RecipeStore.instance.listenable(),
-            builder: (context, box, _) {
-              final recipes = box.values.toList(growable: false)
-                ..sort(
-                  (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+          child: StreamBuilder<List<RecipeEntity>>(
+            stream: AppRepositories.instance.recipes.watchAll(),
+            builder: (context, snapshot) {
+              final recipes = List<RecipeEntity>.from(
+                snapshot.data ?? const <RecipeEntity>[],
+              )..sort(
+                  (a, b) =>
+                      a.title.toLowerCase().compareTo(b.title.toLowerCase()),
                 );
               if (recipes.isEmpty) {
                 return const Center(
@@ -47,8 +48,8 @@ class StoredRecipesScreen extends StatelessWidget {
                   return RecipeListTile(
                     entity: entity,
                     onTap: () => onRecipeTap(context, entity),
-                    onToggleFavorite: () =>
-                        RecipeStore.instance.toggleFavorite(entity.url),
+                    onToggleFavorite: () => AppRepositories.instance.recipes
+                        .toggleFavorite(entity.url),
                   );
                 },
               );

@@ -9,5 +9,13 @@ Future<void> main() async {
   await MealPlanStore.init();
   await ShoppingListStore.init();
   await InventoryStore.init();
+  AppRepositories.install(
+    AppRepositories(
+      recipes: HiveRecipeRepository(),
+      mealPlans: HiveMealPlanRepository(),
+      shoppingList: HiveShoppingListRepository(),
+      inventory: HiveInventoryRepository(),
+    ),
+  );
   runApp(const RecipeParserApp());
 }

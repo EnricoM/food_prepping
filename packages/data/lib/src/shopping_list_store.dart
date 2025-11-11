@@ -31,6 +31,8 @@ class ShoppingListStore {
 
   ValueListenable<Box<ShoppingListItem>> listenable() => _box.listenable();
 
+  List<ShoppingListItem> allItems() => _box.values.toList(growable: false);
+
   Future<void> addItems(List<ShoppingListItem> items) async {
     if (items.isEmpty) {
       return;

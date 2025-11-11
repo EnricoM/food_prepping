@@ -1,6 +1,5 @@
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
@@ -33,10 +32,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       body: SafeArea(
         child: Padding(
           padding: inset,
-          child: ValueListenableBuilder<Box<ShoppingListItem>>(
-            valueListenable: ShoppingListStore.instance.listenable(),
-            builder: (context, box, _) {
-              final items = box.values.toList(growable: false)
+          child: StreamBuilder<List<ShoppingListItem>>(
+            stream: AppRepositories.instance.shoppingList.watchAll(),
+            builder: (context, snapshot) {
+              final items = List<ShoppingListItem>.from(
+                snapshot.data ?? const <ShoppingListItem>[],
+              )
                 ..sort((a, b) => a.isChecked == b.isChecked
                     ? a.addedAt.compareTo(b.addedAt)
                     : (a.isChecked ? 1 : -1));
@@ -117,7 +118,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     onPressed: () async {
                       final value = controller.text.trim();
                       if (value.isNotEmpty) {
-                        await ShoppingListStore.instance.addItems([
+                        await AppRepositories.instance.shoppingList.addItems([
                           ShoppingListItem(ingredient: value),
                         ]);
                       }
@@ -148,7 +149,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   }
 
   Future<void> _handleToggle(ShoppingListItem item, bool checked) async {
-    await ShoppingListStore.instance.updateChecked(item, checked);
+    await AppRepositories.instance.shoppingList.updateChecked(item, checked);
     if (!checked) {
       return;
     }
@@ -157,7 +158,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     if (result is _InventoryAddRecord) {
-      await InventoryStore.instance.addItem(
+      await AppRepositories.instance.inventory.addItem(
         InventoryItem(
           name: result.name,
           quantity: result.quantity,
@@ -165,17 +166,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           note: result.note ?? item.note,
         ),
       );
-      await ShoppingListStore.instance.remove(item);
+      await AppRepositories.instance.shoppingList.remove(item);
       messenger.showSnackBar(
         SnackBar(content: Text('Added ${result.name} to inventory.')),
       );
     } else if (result == _PostCheckAction.remove) {
-      await ShoppingListStore.instance.remove(item);
+      await AppRepositories.instance.shoppingList.remove(item);
       messenger.showSnackBar(
-        SnackBar(content: Text('Removed "${item.ingredient}" from the list.')),
+        SnackBar(
+          content: Text('Removed "${item.ingredient}" from the list.'),
+        ),
       );
     } else if (result == _PostCheckAction.undo) {
-      await ShoppingListStore.instance.updateChecked(item, false);
+      await AppRepositories.instance.shoppingList.updateChecked(item, false);
     }
   }
 
@@ -334,7 +337,8 @@ class _ShoppingListTile extends StatelessWidget {
         color: theme.colorScheme.errorContainer,
         child: Icon(Icons.delete_outline, color: theme.colorScheme.error),
       ),
-      onDismissed: (_) => ShoppingListStore.instance.remove(item),
+      onDismissed: (_) =>
+          AppRepositories.instance.shoppingList.remove(item),
       child: CheckboxListTile(
         value: item.isChecked,
         onChanged: (value) => onToggle(value ?? false),
@@ -343,7 +347,8 @@ class _ShoppingListTile extends StatelessWidget {
         controlAffinity: ListTileControlAffinity.leading,
         secondary: IconButton(
           icon: const Icon(Icons.delete_outline),
-          onPressed: () => ShoppingListStore.instance.remove(item),
+          onPressed: () =>
+              AppRepositories.instance.shoppingList.remove(item),
         ),
       ),
     );
@@ -360,13 +365,13 @@ class _ShoppingListMenu extends StatelessWidget {
       onSelected: (action) async {
         switch (action) {
           case _ShoppingMenuAction.clearChecked:
-            await ShoppingListStore.instance.clearCompleted();
+            await AppRepositories.instance.shoppingList.clearCompleted();
             messenger.showSnackBar(
               const SnackBar(content: Text('Cleared checked items.')),
             );
             break;
           case _ShoppingMenuAction.clearAll:
-            await ShoppingListStore.instance.clearAll();
+            await AppRepositories.instance.shoppingList.clearAll();
             messenger.showSnackBar(
               const SnackBar(content: Text('Shopping list cleared.')),
             );
