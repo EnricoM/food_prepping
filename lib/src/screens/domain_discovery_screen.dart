@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:parsing/parsing.dart';
 import 'package:shared_ui/shared_ui.dart';
+import 'package:core/core.dart';
+import 'package:data/data.dart';
 
 import '../navigation/app_drawer.dart';
 
@@ -28,6 +30,7 @@ class _DiscoveredUrl {
   final Uri url;
   bool? hasRecipe;
   String? error;
+  RecipeParseResult? result;
 }
 
 class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
@@ -35,10 +38,12 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
   final _discovery = DomainRecipeDiscovery();
   final _parser = RecipeParser();
   final List<_DiscoveredUrl> _results = [];
+  final Set<Uri> _selectedUrls = {};
   Future<void>? _filterTask;
   bool _cancelFiltering = false;
   int _completedFilters = 0;
   int _successfulFilters = 0;
+  bool _isAdding = false;
   bool _isLoading = false;
   bool _isFiltering = false;
   String? _error;
@@ -62,6 +67,9 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
         _results.where((entry) => entry.hasRecipe == false).length;
     final pendingCount =
         _results.where((entry) => entry.hasRecipe == null).length;
+    final successUrls = successfulResults.map((entry) => entry.url).toSet();
+    _selectedUrls.removeWhere((url) => !successUrls.contains(url));
+    final hasSelection = _selectedUrls.isNotEmpty;
     return Scaffold(
       appBar: AppBar(title: const Text('Discover recipes by domain')),
       drawer:
@@ -88,6 +96,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                             setState(() {
                               _domainController.clear();
                           _results.clear();
+                          _selectedUrls.clear();
                           _isFiltering = false;
                           _completedFilters = 0;
                           _successfulFilters = 0;
@@ -155,6 +164,51 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                 'Ready to import',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: successUrls.isEmpty
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedUrls
+                                ..clear()
+                                ..addAll(successUrls);
+                            });
+                          },
+                    icon: const Icon(Icons.done_all),
+                    label: const Text('Select all'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: hasSelection
+                        ? () {
+                            setState(_selectedUrls.clear);
+                          }
+                        : null,
+                    icon: const Icon(Icons.clear_all),
+                    label: const Text('Clear selection'),
+                  ),
+                  FilledButton.icon(
+                    onPressed:
+                        hasSelection && !_isAdding ? _addSelectedToLibrary : null,
+                    icon: _isAdding
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.library_add),
+                    label: Text(
+                      _isAdding
+                          ? 'Adding...'
+                          : 'Add ${_selectedUrls.length} selected',
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
               ListView.separated(
                 physics: const NeverScrollableScrollPhysics(),
@@ -162,15 +216,30 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                 itemCount: successfulResults.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final url = successfulResults[index].url;
+                  final entry = successfulResults[index];
+                  final url = entry.url;
+                  final selected = _selectedUrls.contains(url);
                   return Card(
-                    child: ListTile(
+                    child: CheckboxListTile(
+                      value: selected,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedUrls.add(url);
+                          } else {
+                            _selectedUrls.remove(url);
+                          }
+                        });
+                      },
                       title: Text(url.toString()),
-                      subtitle: const Text('Tap to open in parser'),
-                      trailing: const Icon(Icons.open_in_new),
-                      onTap: () => widget.onRecipeDiscovered(
-                        context,
-                        url.toString(),
+                      subtitle: const Text('Tap the icon to parse now'),
+                      secondary: IconButton(
+                        icon: const Icon(Icons.open_in_new),
+                        tooltip: 'Open in parser',
+                        onPressed: () => widget.onRecipeDiscovered(
+                          context,
+                          url.toString(),
+                        ),
                       ),
                     ),
                   );
@@ -228,6 +297,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
       _completedFilters = 0;
       _successfulFilters = 0;
       _results.clear();
+      _selectedUrls.clear();
     });
     try {
       final urls = await _discovery.discoverRecipes(domain);
@@ -274,7 +344,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
         break;
       }
       try {
-        await _parser.parseUrl(entry.url.toString());
+        final parseResult = await _parser.parseUrl(entry.url.toString());
         if (_cancelFiltering) {
           break;
         }
@@ -282,6 +352,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
         setState(() {
           entry.hasRecipe = true;
           entry.error = null;
+          entry.result = parseResult;
           _successfulFilters++;
           _completedFilters++;
         });
@@ -290,6 +361,8 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
         setState(() {
           entry.hasRecipe = false;
           entry.error = error.message;
+          entry.result = null;
+          _selectedUrls.remove(entry.url);
           _completedFilters++;
         });
       } catch (error) {
@@ -297,6 +370,8 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
         setState(() {
           entry.hasRecipe = false;
           entry.error = error.toString();
+          entry.result = null;
+          _selectedUrls.remove(entry.url);
           _completedFilters++;
         });
       }
@@ -312,6 +387,60 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
           : 'No recipe pages detected.';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
+      );
+    }
+  }
+
+  Future<void> _addSelectedToLibrary() async {
+    if (_selectedUrls.isEmpty || _isAdding) {
+      return;
+    }
+    setState(() {
+      _isAdding = true;
+    });
+    final messenger = ScaffoldMessenger.of(context);
+    int successCount = 0;
+    final failedUrls = <Uri>[];
+    for (final url in _selectedUrls.toList()) {
+      _DiscoveredUrl entry;
+      try {
+        entry = _results.firstWhere((element) => element.url == url);
+      } catch (_) {
+        failedUrls.add(url);
+        continue;
+      }
+      try {
+        final result = entry.result ?? await _parser.parseUrl(url.toString());
+        entry.result ??= result;
+        entry.hasRecipe = true;
+        await AppRepositories.instance.recipes.saveParsedRecipe(
+          result: result,
+          url: url.toString(),
+        );
+        successCount++;
+      } catch (error) {
+        failedUrls.add(url);
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _isAdding = false;
+      _selectedUrls.removeWhere(failedUrls.contains);
+    });
+    if (successCount > 0) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Saved $successCount recipe${successCount == 1 ? '' : 's'} to your library.'),
+        ),
+      );
+    }
+    if (failedUrls.isNotEmpty) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to save ${failedUrls.length} URL${failedUrls.length == 1 ? '' : 's'}.',
+          ),
+        ),
       );
     }
   }
