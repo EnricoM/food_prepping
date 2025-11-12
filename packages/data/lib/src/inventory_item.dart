@@ -9,6 +9,7 @@ class InventoryItem extends HiveObject {
     this.location,
     this.note,
     this.expiry,
+    this.costPerUnit,
     DateTime? addedAt,
     DateTime? updatedAt,
     this.isLowStock = false,
@@ -22,9 +23,13 @@ class InventoryItem extends HiveObject {
   final String? location;
   final String? note;
   final DateTime? expiry;
+  final double? costPerUnit; // Cost per unit (e.g., per kg, per item)
   final DateTime addedAt;
   final DateTime updatedAt;
   final bool isLowStock;
+  
+  /// Total cost for this inventory item
+  double? get totalCost => costPerUnit != null ? costPerUnit! * quantity : null;
 
   InventoryItem copyWith({
     String? name,
@@ -34,6 +39,7 @@ class InventoryItem extends HiveObject {
     String? location,
     String? note,
     DateTime? expiry,
+    double? costPerUnit,
     DateTime? addedAt,
     DateTime? updatedAt,
     bool? isLowStock,
@@ -46,6 +52,7 @@ class InventoryItem extends HiveObject {
       location: location ?? this.location,
       note: note ?? this.note,
       expiry: expiry ?? this.expiry,
+      costPerUnit: costPerUnit ?? this.costPerUnit,
       addedAt: addedAt ?? this.addedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isLowStock: isLowStock ?? this.isLowStock,
@@ -73,6 +80,7 @@ class InventoryItemAdapter extends TypeAdapter<InventoryItem> {
       location: fields[4] as String?,
       note: fields[5] as String?,
       expiry: fields[6] as DateTime?,
+      costPerUnit: (fields[10] as num?)?.toDouble(),
       addedAt: fields[7] as DateTime? ?? DateTime.now(),
       updatedAt: fields[8] as DateTime? ?? DateTime.now(),
       isLowStock: fields[9] as bool? ?? false,
@@ -82,7 +90,7 @@ class InventoryItemAdapter extends TypeAdapter<InventoryItem> {
   @override
   void write(BinaryWriter writer, InventoryItem obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -102,6 +110,8 @@ class InventoryItemAdapter extends TypeAdapter<InventoryItem> {
       ..writeByte(8)
       ..write(obj.updatedAt)
       ..writeByte(9)
-      ..write(obj.isLowStock);
+      ..write(obj.isLowStock)
+      ..writeByte(10)
+      ..write(obj.costPerUnit);
   }
 }

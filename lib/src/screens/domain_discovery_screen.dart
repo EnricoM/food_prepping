@@ -302,16 +302,70 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
     try {
       final urls = await _discovery.discoverRecipes(domain, maxUrls: 750);
       if (!mounted) return;
+      
+      // Normalize domain for lookup (extract host from domain input)
+      String normalizedDomain;
+      try {
+        var domainInput = domain.trim();
+        if (!domainInput.startsWith('http')) {
+          domainInput = 'https://$domainInput';
+        }
+        final uri = Uri.parse(domainInput);
+        normalizedDomain = uri.host.toLowerCase();
+        // Remove www. prefix for consistency
+        if (normalizedDomain.startsWith('www.')) {
+          normalizedDomain = normalizedDomain.substring(4);
+        }
+      } catch (_) {
+        normalizedDomain = domain.toLowerCase();
+      }
+      
+      // Filter out already imported URLs
+      final importedUrls = ImportedUrlStore.instance.getImportedUrlsForDomain(normalizedDomain);
+      final importedUrlsSet = importedUrls.map((url) {
+        // Normalize for comparison
+        String normalized = url.trim();
+        if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+          normalized = 'https://$normalized';
+        }
+        return normalized;
+      }).toSet();
+      
+      final newUrls = urls.where((url) {
+        final urlString = url.toString();
+        String normalized = urlString.trim();
+        if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+          normalized = 'https://$normalized';
+        }
+        return !importedUrlsSet.contains(normalized) && 
+               !importedUrls.contains(urlString);
+      }).toList();
+      final skippedCount = urls.length - newUrls.length;
+      
       setState(() {
         _isLoading = false;
-        _results.addAll(urls.map(_DiscoveredUrl.new));
+        _results.addAll(newUrls.map(_DiscoveredUrl.new));
       });
-      if (urls.isEmpty) {
+      
+      if (newUrls.isEmpty) {
+        final message = skippedCount > 0
+            ? 'All pages from this domain have already been imported ($skippedCount skipped).'
+            : 'No pages found for this domain.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No pages found for this domain.')),
+          SnackBar(content: Text(message)),
         );
         return;
       }
+      
+      if (skippedCount > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Skipped $skippedCount already imported page${skippedCount == 1 ? '' : 's'}.'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      
       _startFiltering();
     } catch (error) {
       if (!mounted) return;

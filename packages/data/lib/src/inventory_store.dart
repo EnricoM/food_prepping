@@ -44,6 +44,7 @@ class InventoryStore {
     String? location,
     String? note,
     DateTime? expiry,
+    double? costPerUnit,
     bool? isLowStock,
   }) async {
     final updated = item.copyWith(
@@ -54,6 +55,7 @@ class InventoryStore {
       location: location,
       note: note,
       expiry: expiry,
+      costPerUnit: costPerUnit,
       updatedAt: DateTime.now(),
       isLowStock: isLowStock,
     );

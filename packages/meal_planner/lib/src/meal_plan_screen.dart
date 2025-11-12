@@ -360,6 +360,204 @@ class _MealDayEditorState extends State<_MealDayEditor> {
           ],
         ),
         const SizedBox(height: 16),
+        StreamBuilder<List<InventoryItem>>(
+          stream: _watchInventory(),
+          builder: (context, inventorySnapshot) {
+            final inventoryItems = inventorySnapshot.data ?? const [];
+            final allSelectedRecipes = widget.selectedRecipes.values
+                .expand((recipes) => recipes)
+                .toList();
+            
+            if (allSelectedRecipes.isNotEmpty) {
+              final costEstimate = CostEstimationService.estimateMealPlanCost(
+                recipes: allSelectedRecipes,
+                inventoryItems: inventoryItems,
+              );
+              
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.attach_money_rounded,
+                            color: theme.colorScheme.primary,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Estimated Cost',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _MealPlanNutritionCard(
+                        recipes: allSelectedRecipes,
+                      ),
+                      const SizedBox(height: 12),
+                      if (costEstimate.totalCost != null) ...[
+                        if (!costEstimate.hasAllCosts || 
+                            costEstimate.recipeCosts.any((rc) => rc.usesDefaultPrices)) ...[
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  size: 16,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    costEstimate.recipeCosts.any((rc) => rc.usesDefaultPrices)
+                                        ? 'Estimated cost using default prices (approximate)'
+                                        : 'Partial cost estimate (some ingredients missing cost data)',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total for today:',
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                            Text(
+                              '\$${costEstimate.totalCost!.toStringAsFixed(2)}',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (costEstimate.recipeCosts.isNotEmpty) ...[
+                          const Divider(),
+                          const SizedBox(height: 8),
+                          ...costEstimate.recipeCosts.map<Widget>((recipeCost) {
+                            final costPerServing = recipeCost.costPerServing;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      recipeCost.recipe.title,
+                                      style: theme.textTheme.bodyMedium,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (recipeCost.totalCost != null) ...[
+                                    Text(
+                                      '\$${recipeCost.totalCost!.toStringAsFixed(2)}',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    if (costPerServing != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: Text(
+                                          '/ \$${costPerServing.toStringAsFixed(2)} per serving',
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.6),
+                                          ),
+                                        ),
+                                      ),
+                                  ] else
+                                    Text(
+                                      'Cost unknown',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                      ] else ...[
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: 20,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Add cost information to inventory items to see cost estimates.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (inventoryItems.isEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'No inventory items found. Add items to your inventory first.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            '${inventoryItems.where((item) => item.costPerUnit != null).length} of ${inventoryItems.length} inventory items have cost information.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/inventory');
+                            },
+                            icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                            label: const Text('Add costs to inventory'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+        const SizedBox(height: 16),
         for (final slot in slots)
           Builder(
             builder: (context) {
@@ -716,6 +914,19 @@ class _MealDayEditorState extends State<_MealDayEditor> {
   String _ingredientsPreview(RecipeEntity recipe, {int maxCount = 3}) {
     return _ingredientsPreviewText(recipe.toRecipe(), maxCount: maxCount);
   }
+
+  Stream<List<InventoryItem>> _watchInventory() {
+    final listenable = InventoryStore.instance.listenable();
+    return Stream<List<InventoryItem>>.multi((controller) {
+      void emit() => controller.add(InventoryStore.instance.items().toList());
+      emit();
+      void listener() => emit();
+      listenable.addListener(listener);
+      controller.onCancel = () {
+        listenable.removeListener(listener);
+      };
+    });
+  }
 }
 
 class _MealSlotCard extends StatefulWidget {
@@ -998,4 +1209,196 @@ class _InventoryMatchSummary {
 
   final InventoryItem item;
   final int count;
+}
+
+class _MealPlanNutritionCard extends StatelessWidget {
+  const _MealPlanNutritionCard({required this.recipes});
+
+  final List<RecipeEntity> recipes;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final nutritionInfos = recipes
+        .map((entity) => NutritionService.getNutritionInfoForEntity(entity))
+        .whereType<NutritionInfo>()
+        .toList();
+
+    if (nutritionInfos.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final totalNutrition = NutritionInfo.combine(nutritionInfos);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.local_fire_department,
+                  color: theme.colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Daily Nutrition',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (totalNutrition.calories != null) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Total Calories',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '${totalNutrition.calories!.toStringAsFixed(0)} kcal',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+            Row(
+              children: [
+                if (totalNutrition.protein != null)
+                  Expanded(
+                    child: _NutritionSummaryBox(
+                      label: 'Protein',
+                      value: '${totalNutrition.protein!.toStringAsFixed(1)}g',
+                      color: Colors.blue,
+                    ),
+                  ),
+                if (totalNutrition.carbohydrates != null) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _NutritionSummaryBox(
+                      label: 'Carbs',
+                      value: '${totalNutrition.carbohydrates!.toStringAsFixed(1)}g',
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+                if (totalNutrition.fat != null) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _NutritionSummaryBox(
+                      label: 'Fat',
+                      value: '${totalNutrition.fat!.toStringAsFixed(1)}g',
+                      color: Colors.amber,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (nutritionInfos.length < recipes.length) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Nutrition data available for ${nutritionInfos.length} of ${recipes.length} recipes',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NutritionSummaryBox extends StatelessWidget {
+  const _NutritionSummaryBox({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

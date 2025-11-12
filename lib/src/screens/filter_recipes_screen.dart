@@ -22,7 +22,10 @@ class FilterRecipesScreen extends StatefulWidget {
 
 class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
   final _searchController = TextEditingController();
-  final _selectedCategories = <String>{};
+  String? _selectedContinent;
+  String? _selectedCountry;
+  String? _selectedDiet;
+  String? _selectedCourse;
 
   @override
   void dispose() {
@@ -70,16 +73,37 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
             StreamBuilder<List<RecipeEntity>>(
               stream: AppRepositories.instance.recipes.watchAll(),
               builder: (context, snapshot) {
-                final categories = (snapshot.data ?? const <RecipeEntity>[])
-                    .expand(
-                      (entity) => entity.normalizedCategories,
-                    )
-                    .map((e) => e.toLowerCase())
-                    .toSet();
-                final sortedCategories = categories.toList()..sort();
-                if (sortedCategories.isEmpty) {
-                  return const SliverToBoxAdapter(child: SizedBox.shrink());
-                }
+                final recipes = snapshot.data ?? const <RecipeEntity>[];
+                
+                // Extract unique values from recipes
+                final availableContinents = recipes
+                    .map((e) => e.continent)
+                    .whereType<String>()
+                    .toSet()
+                    .toList()
+                  ..sort();
+                
+                final availableCountries = recipes
+                    .map((e) => e.country)
+                    .whereType<String>()
+                    .toSet()
+                    .toList()
+                  ..sort();
+                
+                final availableDiets = recipes
+                    .map((e) => e.diet)
+                    .whereType<String>()
+                    .toSet()
+                    .toList()
+                  ..sort();
+                
+                final availableCourses = recipes
+                    .map((e) => e.course)
+                    .whereType<String>()
+                    .toSet()
+                    .toList()
+                  ..sort();
+                
                 return SliverPadding(
                   padding: EdgeInsets.fromLTRB(
                     inset.left,
@@ -88,26 +112,55 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
                     0,
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: sortedCategories
-                          .map(
-                            (category) => FilterChip(
-                              label: Text(category),
-                              selected: _selectedCategories.contains(category),
-                              onSelected: (selected) {
-                                setState(() {
-                                  if (selected) {
-                                    _selectedCategories.add(category);
-                                  } else {
-                                    _selectedCategories.remove(category);
-                                  }
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildFilterDropdown(
+                          label: 'Continent',
+                          value: _selectedContinent,
+                          items: availableContinents,
+                          onChanged: (value) => setState(() => _selectedContinent = value),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildFilterDropdown(
+                          label: 'Country',
+                          value: _selectedCountry,
+                          items: availableCountries,
+                          onChanged: (value) => setState(() => _selectedCountry = value),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildFilterDropdown(
+                          label: 'Diet',
+                          value: _selectedDiet,
+                          items: availableDiets,
+                          onChanged: (value) => setState(() => _selectedDiet = value),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildFilterDropdown(
+                          label: 'Course',
+                          value: _selectedCourse,
+                          items: availableCourses,
+                          onChanged: (value) => setState(() => _selectedCourse = value),
+                        ),
+                        if (_selectedContinent != null ||
+                            _selectedCountry != null ||
+                            _selectedDiet != null ||
+                            _selectedCourse != null) ...[
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _selectedContinent = null;
+                                _selectedCountry = null;
+                                _selectedDiet = null;
+                                _selectedCourse = null;
+                              });
+                            },
+                            icon: const Icon(Icons.clear_all),
+                            label: const Text('Clear all filters'),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 );
@@ -117,19 +170,21 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
               stream: AppRepositories.instance.recipes.watchAll(),
               builder: (context, snapshot) {
                 final query = _searchController.text.trim().toLowerCase();
-                final categories = _selectedCategories;
                 final items = (snapshot.data ?? const <RecipeEntity>[])
                     .where(
                       (entity) => entity.matchesFilters(
                         query: query,
-                        selectedCategories: categories,
+                        selectedContinent: _selectedContinent,
+                        selectedCountry: _selectedCountry,
+                        selectedDiet: _selectedDiet,
+                        selectedCourse: _selectedCourse,
                       ),
                     )
                     .toList()
-                  ..sort(
-                    (a, b) =>
-                        a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-                  );
+                    ..sort(
+                      (a, b) =>
+                          a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+                    );
                 if (items.isEmpty) {
                   return SliverFillRemaining(
                     hasScrollBody: false,
@@ -169,6 +224,34 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFilterDropdown({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required void Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      value: value,
+      items: [
+        const DropdownMenuItem<String>(
+          value: null,
+          child: Text('All'),
+        ),
+        ...items.map(
+          (item) => DropdownMenuItem<String>(
+            value: item,
+            child: Text(item),
+          ),
+        ),
+      ],
+      onChanged: onChanged,
     );
   }
 }

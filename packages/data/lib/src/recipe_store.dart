@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:core/core.dart';
+import 'imported_url_store.dart';
 import 'recipe_entity.dart';
 
 class RecipeStore {
@@ -44,6 +45,9 @@ class RecipeStore {
       strategy: result.strategy,
     ).copyWith(isFavorite: existing?.isFavorite);
     await _box.put(key, entity);
+    
+    // Mark URL as imported
+    await ImportedUrlStore.instance.markAsImported(key);
   }
 
   Future<String> saveManualRecipe({
@@ -115,6 +119,28 @@ class RecipeStore {
       return;
     }
     await _box.put(url, entity.copyWith(isFavorite: !entity.isFavorite));
+  }
+
+  Future<void> updateFilters({
+    required String url,
+    String? continent,
+    String? country,
+    String? diet,
+    String? course,
+  }) async {
+    final entity = _box.get(url);
+    if (entity == null) {
+      return;
+    }
+    await _box.put(
+      url,
+      entity.copyWith(
+        continent: continent,
+        country: country,
+        diet: diet,
+        course: course,
+      ),
+    );
   }
 
   Future<void> delete(String url) => _box.delete(url);

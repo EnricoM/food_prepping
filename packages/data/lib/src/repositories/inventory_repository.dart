@@ -16,6 +16,7 @@ abstract class InventoryRepository {
     String? location,
     String? note,
     DateTime? expiry,
+    double? costPerUnit,
     bool? isLowStock,
   });
   Future<void> adjustQuantity(InventoryItem item, double delta);
@@ -62,6 +63,7 @@ class HiveInventoryRepository implements InventoryRepository {
     String? location,
     String? note,
     DateTime? expiry,
+    double? costPerUnit,
     bool? isLowStock,
   }) {
     return _store.upsertItem(
@@ -73,6 +75,7 @@ class HiveInventoryRepository implements InventoryRepository {
       location: location,
       note: note,
       expiry: expiry,
+      costPerUnit: costPerUnit,
       isLowStock: isLowStock,
     );
   }

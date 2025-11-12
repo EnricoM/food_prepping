@@ -17,74 +17,129 @@ class RecipeListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recipe = entity.toRecipe();
+    final theme = Theme.of(context);
     return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _RecipeThumbnail(imageUrl: recipe.imageUrl),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      recipe.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+      elevation: 3,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _RecipeThumbnail(imageUrl: recipe.imageUrl),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              recipe.title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                          ),
+                          if (entity.isFavorite)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Icon(
+                                Icons.star_rounded,
+                                size: 20,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                        ],
                       ),
-                    ),
-                    if (recipe.description != null &&
-                        recipe.description!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          recipe.description!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                      if (recipe.description != null &&
+                          recipe.description!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            recipe.description!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
                         ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.restaurant_menu_outlined,
+                            size: 14,
+                            color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              ingredientsPreview(recipe),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    const SizedBox(height: 8),
-                    Text(
-                      ingredientsPreview(recipe),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                    ),
-                    if (entity.normalizedCategories.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                      if (entity.normalizedCategories.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
                           children: entity.normalizedCategories
                               .take(3)
-                              .map((category) => Chip(label: Text(category)))
+                              .map((category) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primaryContainer
+                                          .withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      category,
+                                      style: theme.textTheme.labelSmall?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ))
                               .toList(),
                         ),
-                      ),
-                  ],
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                tooltip: entity.isFavorite
-                    ? 'Remove favourite'
-                    : 'Add to favourites',
-                icon: Icon(
-                  entity.isFavorite ? Icons.star : Icons.star_border,
-                  color: entity.isFavorite
-                      ? Theme.of(context).colorScheme.primary
-                      : null,
+                IconButton(
+                  tooltip: entity.isFavorite
+                      ? 'Remove favourite'
+                      : 'Add to favourites',
+                  icon: Icon(
+                    entity.isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: entity.isFavorite
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                  onPressed: onToggleFavorite,
                 ),
-                onPressed: onToggleFavorite,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -102,25 +157,78 @@ class _RecipeThumbnail extends StatelessWidget {
     if (imageUrl == null || imageUrl!.isEmpty) {
       return _placeholder();
     }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        imageUrl!,
-        width: 96,
-        height: 96,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _placeholder(),
+    return Container(
+      width: 96,
+      height: 96,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          imageUrl!,
+          width: 96,
+          height: 96,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _placeholder(),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.grey.shade200,
+                    Colors.grey.shade100,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                  strokeWidth: 2,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _placeholder() {
-    return const SizedBox(
+    return Container(
       width: 96,
       height: 96,
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: Colors.black12),
-        child: Icon(Icons.image_not_supported),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.grey.shade200,
+            Colors.grey.shade100,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        Icons.restaurant_menu_rounded,
+        color: Colors.grey.shade400,
+        size: 40,
       ),
     );
   }

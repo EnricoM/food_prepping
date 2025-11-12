@@ -9,6 +9,7 @@ Future<void> main() async {
   await MealPlanStore.init();
   await ShoppingListStore.init();
   await InventoryStore.init();
+  await ImportedUrlStore.init();
   AppRepositories.install(
     AppRepositories(
       recipes: HiveRecipeRepository(),

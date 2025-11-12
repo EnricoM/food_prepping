@@ -7,20 +7,27 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = _DrawerEntry.entries;
     return Drawer(
       child: SafeArea(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             const _DrawerHeader(),
-            for (final entry in entries)
-              _DrawerTile(
-                icon: entry.icon,
-                label: entry.label,
-                routeName: entry.routeName,
-                currentRoute: currentRoute,
-              ),
+            _DrawerSection(
+              title: 'Recipes',
+              entries: _DrawerEntry.recipeEntries,
+              currentRoute: currentRoute,
+            ),
+            _DrawerSection(
+              title: 'Inventory & Shopping',
+              entries: _DrawerEntry.inventoryShoppingEntries,
+              currentRoute: currentRoute,
+            ),
+            _DrawerSection(
+              title: 'Meal Planning',
+              entries: _DrawerEntry.mealPlanningEntries,
+              currentRoute: currentRoute,
+            ),
             const Padding(
               padding: EdgeInsets.all(16),
               child: Text(
@@ -50,7 +57,8 @@ class _DrawerEntry {
   final String label;
   final String routeName;
 
-  static final entries = <_DrawerEntry>[
+  // Recipe related entries
+  static final recipeEntries = <_DrawerEntry>[
     const _DrawerEntry(
       icon: Icons.home_outlined,
       label: 'Home',
@@ -72,26 +80,6 @@ class _DrawerEntry {
       routeName: '/stored',
     ),
     const _DrawerEntry(
-      icon: Icons.inventory_2_outlined,
-      label: 'Inventory',
-      routeName: '/inventory',
-    ),
-    const _DrawerEntry(
-      icon: Icons.shopping_cart_outlined,
-      label: 'Shopping list',
-      routeName: '/shopping-list',
-    ),
-    const _DrawerEntry(
-      icon: Icons.calendar_month_outlined,
-      label: 'Meal planner',
-      routeName: '/meal-plan',
-    ),
-    const _DrawerEntry(
-      icon: Icons.history,
-      label: 'Recently added',
-      routeName: '/recent',
-    ),
-    const _DrawerEntry(
       icon: Icons.filter_alt_outlined,
       label: 'Filter recipes',
       routeName: '/filter',
@@ -102,9 +90,52 @@ class _DrawerEntry {
       routeName: '/favorites',
     ),
     const _DrawerEntry(
+      icon: Icons.history,
+      label: 'Recently added',
+      routeName: '/recent',
+    ),
+    const _DrawerEntry(
       icon: Icons.explore_outlined,
       label: 'Discover domain',
       routeName: '/discover',
+    ),
+    const _DrawerEntry(
+      icon: Icons.history_outlined,
+      label: 'Visited domains',
+      routeName: '/visited-domains',
+    ),
+    const _DrawerEntry(
+      icon: Icons.batch_prediction_outlined,
+      label: 'Batch cooking',
+      routeName: '/batch-cooking',
+    ),
+  ];
+
+  // Inventory & Shopping related entries
+  static final inventoryShoppingEntries = <_DrawerEntry>[
+    const _DrawerEntry(
+      icon: Icons.inventory_2_outlined,
+      label: 'Inventory',
+      routeName: '/inventory',
+    ),
+    const _DrawerEntry(
+      icon: Icons.restaurant_menu,
+      label: 'What can I make?',
+      routeName: '/inventory-recipes',
+    ),
+    const _DrawerEntry(
+      icon: Icons.shopping_cart_outlined,
+      label: 'Shopping list',
+      routeName: '/shopping-list',
+    ),
+  ];
+
+  // Meal planning related entries
+  static final mealPlanningEntries = <_DrawerEntry>[
+    const _DrawerEntry(
+      icon: Icons.calendar_month_outlined,
+      label: 'Meal planner',
+      routeName: '/meal-plan',
     ),
   ];
 }
@@ -150,6 +181,46 @@ class _DrawerHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DrawerSection extends StatelessWidget {
+  const _DrawerSection({
+    required this.title,
+    required this.entries,
+    required this.currentRoute,
+  });
+
+  final String title;
+  final List<_DrawerEntry> entries;
+  final String currentRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text(
+            title,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        for (final entry in entries)
+          _DrawerTile(
+            icon: entry.icon,
+            label: entry.label,
+            routeName: entry.routeName,
+            currentRoute: currentRoute,
+          ),
+      ],
     );
   }
 }

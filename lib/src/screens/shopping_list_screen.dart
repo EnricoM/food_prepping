@@ -15,7 +15,15 @@ class ShoppingListScreen extends StatefulWidget {
   State<ShoppingListScreen> createState() => _ShoppingListScreenState();
 }
 
+enum _GroupBy { none, category, recipe, storeLayout }
+
+enum _SortBy { added, alphabetical, category }
+
 class _ShoppingListScreenState extends State<ShoppingListScreen> {
+  _GroupBy _groupBy = _GroupBy.category;
+  _SortBy _sortBy = _SortBy.category;
+  bool _mergeDuplicates = true;
+
   @override
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
@@ -30,33 +38,85 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         child: const Icon(Icons.add),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: inset,
-          child: StreamBuilder<List<ShoppingListItem>>(
-            stream: AppRepositories.instance.shoppingList.watchAll(),
-            builder: (context, snapshot) {
-              final items = List<ShoppingListItem>.from(
-                snapshot.data ?? const <ShoppingListItem>[],
-              )
-                ..sort((a, b) => a.isChecked == b.isChecked
-                    ? a.addedAt.compareTo(b.addedAt)
-                    : (a.isChecked ? 1 : -1));
-              if (items.isEmpty) {
-                return const _EmptyState();
-              }
-              return ListView.separated(
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return _ShoppingListTile(
-                    item: item,
-                    onToggle: (checked) => _handleToggle(item, checked),
-                  );
-                },
-              );
-            },
-          ),
+        child: Column(
+          children: [
+            _OrganizationControls(
+              groupBy: _groupBy,
+              sortBy: _sortBy,
+              mergeDuplicates: _mergeDuplicates,
+              onGroupByChanged: (value) => setState(() => _groupBy = value),
+              onSortByChanged: (value) => setState(() => _sortBy = value),
+              onMergeDuplicatesChanged: (value) =>
+                  setState(() => _mergeDuplicates = value),
+            ),
+            Expanded(
+              child: Padding(
+                padding: inset,
+                child: StreamBuilder<List<ShoppingListItem>>(
+                  stream: AppRepositories.instance.shoppingList.watchAll(),
+                  builder: (context, snapshot) {
+                    var items = List<ShoppingListItem>.from(
+                      snapshot.data ?? const <ShoppingListItem>[],
+                    );
+
+                    // Merge duplicates if enabled
+                    if (_mergeDuplicates) {
+                      items = ShoppingListOrganizer.mergeDuplicates(items);
+                    }
+
+                    // Sort items
+                    switch (_sortBy) {
+                      case _SortBy.category:
+                        items = ShoppingListOrganizer.sortByStoreLayout(items);
+                        break;
+                      case _SortBy.alphabetical:
+                        items = ShoppingListOrganizer.sortAlphabetically(items);
+                        break;
+                      case _SortBy.added:
+                        items.sort((a, b) => a.addedAt.compareTo(b.addedAt));
+                        break;
+                    }
+
+                    // Separate checked and unchecked
+                    final unchecked = items.where((i) => !i.isChecked).toList();
+                    final checked = items.where((i) => i.isChecked).toList();
+
+                    if (items.isEmpty) {
+                      return const _EmptyState();
+                    }
+
+                    // Group items based on selected mode
+                    switch (_groupBy) {
+                      case _GroupBy.category:
+                        return _CategoryGroupedView(
+                          unchecked: unchecked,
+                          checked: checked,
+                          onToggle: _handleToggle,
+                        );
+                      case _GroupBy.recipe:
+                        return _RecipeGroupedView(
+                          unchecked: unchecked,
+                          checked: checked,
+                          onToggle: _handleToggle,
+                        );
+                      case _GroupBy.storeLayout:
+                        return _StoreLayoutView(
+                          unchecked: unchecked,
+                          checked: checked,
+                          onToggle: _handleToggle,
+                        );
+                      case _GroupBy.none:
+                        return _SimpleListView(
+                          unchecked: unchecked,
+                          checked: checked,
+                          onToggle: _handleToggle,
+                        );
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -312,10 +372,15 @@ class _InventoryAddRecord {
 }
 
 class _ShoppingListTile extends StatelessWidget {
-  const _ShoppingListTile({required this.item, required this.onToggle});
+  const _ShoppingListTile({
+    required this.item,
+    required this.onToggle,
+    this.showCategory = false,
+  });
 
   final ShoppingListItem item;
   final ValueChanged<bool> onToggle;
+  final bool showCategory;
 
   @override
   Widget build(BuildContext context) {
@@ -342,13 +407,144 @@ class _ShoppingListTile extends StatelessWidget {
       child: CheckboxListTile(
         value: item.isChecked,
         onChanged: (value) => onToggle(value ?? false),
-        title: Text(item.ingredient),
+        title: Row(
+          children: [
+            if (showCategory) ...[
+              Text(
+                ShoppingListOrganizer.getCategoryIcon(
+                  ShoppingListOrganizer.categorizeIngredient(item.ingredient),
+                ),
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Expanded(child: Text(item.ingredient)),
+          ],
+        ),
         subtitle: subtitle.isEmpty ? null : Text(subtitle),
         controlAffinity: ListTileControlAffinity.leading,
         secondary: IconButton(
           icon: const Icon(Icons.delete_outline),
           onPressed: () =>
               AppRepositories.instance.shoppingList.remove(item),
+        ),
+      ),
+    );
+  }
+}
+
+class _OrganizationControls extends StatelessWidget {
+  const _OrganizationControls({
+    required this.groupBy,
+    required this.sortBy,
+    required this.mergeDuplicates,
+    required this.onGroupByChanged,
+    required this.onSortByChanged,
+    required this.onMergeDuplicatesChanged,
+  });
+
+  final _GroupBy groupBy;
+  final _SortBy sortBy;
+  final bool mergeDuplicates;
+  final ValueChanged<_GroupBy> onGroupByChanged;
+  final ValueChanged<_SortBy> onSortByChanged;
+  final ValueChanged<bool> onMergeDuplicatesChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.tune, size: 20, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Organization',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Group by',
+                        style: theme.textTheme.labelSmall,
+                      ),
+                      const SizedBox(height: 4),
+                      SegmentedButton<_GroupBy>(
+                        segments: const [
+                          ButtonSegment(
+                            value: _GroupBy.none,
+                            label: Text('None'),
+                            tooltip: 'No grouping',
+                          ),
+                          ButtonSegment(
+                            value: _GroupBy.category,
+                            label: Text('Category'),
+                            tooltip: 'Group by store category',
+                          ),
+                          ButtonSegment(
+                            value: _GroupBy.recipe,
+                            label: Text('Recipe'),
+                            tooltip: 'Group by recipe',
+                          ),
+                          ButtonSegment(
+                            value: _GroupBy.storeLayout,
+                            label: Text('Store'),
+                            tooltip: 'Group by store layout',
+                          ),
+                        ],
+                        selected: {groupBy},
+                        onSelectionChanged: (Set<_GroupBy> selected) {
+                          onGroupByChanged(selected.first);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: mergeDuplicates,
+                        onChanged: (value) =>
+                            onMergeDuplicatesChanged(value ?? false),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () =>
+                              onMergeDuplicatesChanged(!mergeDuplicates),
+                          child: Text(
+                            'Merge duplicates',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -393,6 +589,307 @@ class _ShoppingListMenu extends StatelessWidget {
 }
 
 enum _ShoppingMenuAction { clearChecked, clearAll }
+
+// Grouped view implementations
+class _CategoryGroupedView extends StatelessWidget {
+  const _CategoryGroupedView({
+    required this.unchecked,
+    required this.checked,
+    required this.onToggle,
+  });
+
+  final List<ShoppingListItem> unchecked;
+  final List<ShoppingListItem> checked;
+  final void Function(ShoppingListItem, bool) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final uncheckedGrouped =
+        ShoppingListOrganizer.groupByCategory(unchecked);
+    final checkedGrouped = ShoppingListOrganizer.groupByCategory(checked);
+
+    return ListView(
+      children: [
+        // Unchecked items grouped by category
+        ...uncheckedGrouped.entries
+            .map((entry) => _CategorySection(
+                  category: entry.key,
+                  items: entry.value,
+                  onToggle: onToggle,
+                ))
+            .toList(),
+        if (checked.isNotEmpty) ...[
+          const Divider(height: 32),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Completed',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+          ...checkedGrouped.entries
+              .map((entry) => _CategorySection(
+                    category: entry.key,
+                    items: entry.value,
+                    onToggle: onToggle,
+                    isChecked: true,
+                  ))
+              .toList(),
+        ],
+      ],
+    );
+  }
+}
+
+class _CategorySection extends StatelessWidget {
+  const _CategorySection({
+    required this.category,
+    required this.items,
+    required this.onToggle,
+    this.isChecked = false,
+  });
+
+  final ShoppingCategory category;
+  final List<ShoppingListItem> items;
+  final void Function(ShoppingListItem, bool) onToggle;
+  final bool isChecked;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    // Sort items alphabetically within category
+    final sorted = List<ShoppingListItem>.from(items)
+      ..sort((a, b) =>
+          a.ingredient.toLowerCase().compareTo(b.ingredient.toLowerCase()));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              Text(
+                ShoppingListOrganizer.getCategoryIcon(category),
+                style: const TextStyle(fontSize: 20),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                ShoppingListOrganizer.getCategoryName(category),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isChecked
+                      ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
+                      : theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Chip(
+                label: Text('${items.length}'),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+        ),
+        ...sorted.map((item) => _ShoppingListTile(
+              item: item,
+              onToggle: (checked) => onToggle(item, checked),
+              showCategory: false,
+            )),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+class _RecipeGroupedView extends StatelessWidget {
+  const _RecipeGroupedView({
+    required this.unchecked,
+    required this.checked,
+    required this.onToggle,
+  });
+
+  final List<ShoppingListItem> unchecked;
+  final List<ShoppingListItem> checked;
+  final void Function(ShoppingListItem, bool) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final uncheckedGrouped = ShoppingListOrganizer.groupByRecipe(unchecked);
+    final checkedGrouped = ShoppingListOrganizer.groupByRecipe(checked);
+
+    return ListView(
+      children: [
+        ...uncheckedGrouped.entries.map((entry) => _RecipeSection(
+              recipeTitle: entry.key,
+              items: entry.value,
+              onToggle: onToggle,
+            )),
+        if (checked.isNotEmpty) ...[
+          const Divider(height: 32),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Completed',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+          ...checkedGrouped.entries.map((entry) => _RecipeSection(
+                recipeTitle: entry.key,
+                items: entry.value,
+                onToggle: onToggle,
+                isChecked: true,
+              )),
+        ],
+      ],
+    );
+  }
+}
+
+class _RecipeSection extends StatelessWidget {
+  const _RecipeSection({
+    required this.recipeTitle,
+    required this.items,
+    required this.onToggle,
+    this.isChecked = false,
+  });
+
+  final String recipeTitle;
+  final List<ShoppingListItem> items;
+  final void Function(ShoppingListItem, bool) onToggle;
+  final bool isChecked;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              Icon(
+                Icons.restaurant_menu,
+                size: 20,
+                color: isChecked
+                    ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
+                    : theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  recipeTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: isChecked
+                        ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
+                        : theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              Chip(
+                label: Text('${items.length}'),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+        ),
+        ...items.map((item) => _ShoppingListTile(
+              item: item,
+              onToggle: (checked) => onToggle(item, checked),
+              showCategory: false,
+            )),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+class _StoreLayoutView extends StatelessWidget {
+  const _StoreLayoutView({
+    required this.unchecked,
+    required this.checked,
+    required this.onToggle,
+  });
+
+  final List<ShoppingListItem> unchecked;
+  final List<ShoppingListItem> checked;
+  final void Function(ShoppingListItem, bool) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    // Sort by store layout order
+    final sortedUnchecked =
+        ShoppingListOrganizer.sortByStoreLayout(unchecked);
+    final sortedChecked = ShoppingListOrganizer.sortByStoreLayout(checked);
+
+    return _SimpleListView(
+      unchecked: sortedUnchecked,
+      checked: sortedChecked,
+      onToggle: onToggle,
+    );
+  }
+}
+
+class _SimpleListView extends StatelessWidget {
+  const _SimpleListView({
+    required this.unchecked,
+    required this.checked,
+    required this.onToggle,
+  });
+
+  final List<ShoppingListItem> unchecked;
+  final List<ShoppingListItem> checked;
+  final void Function(ShoppingListItem, bool) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: unchecked.length + (checked.isEmpty ? 0 : checked.length + 1),
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        if (index < unchecked.length) {
+          return _ShoppingListTile(
+            item: unchecked[index],
+            onToggle: (checked) => onToggle(unchecked[index], checked),
+            showCategory: true,
+          );
+        }
+        if (index == unchecked.length && checked.isNotEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Completed',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
+            ),
+          );
+        }
+        final checkedIndex = index - unchecked.length - 1;
+        return _ShoppingListTile(
+          item: checked[checkedIndex],
+          onToggle: (checked) => onToggle(this.checked[checkedIndex], checked),
+          showCategory: true,
+        );
+      },
+    );
+  }
+}
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState();

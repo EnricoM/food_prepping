@@ -22,6 +22,13 @@ abstract class RecipeRepository {
   List<RecipeEntity> getAll();
   Set<String> allCategories();
   Future<void> toggleFavorite(String url);
+  Future<void> updateFilters({
+    required String url,
+    String? continent,
+    String? country,
+    String? diet,
+    String? course,
+  });
   Future<void> delete(String url);
   Future<void> clear();
 }
@@ -91,6 +98,21 @@ class HiveRecipeRepository implements RecipeRepository {
 
   @override
   Future<void> toggleFavorite(String url) => _store.toggleFavorite(url);
+
+  @override
+  Future<void> updateFilters({
+    required String url,
+    String? continent,
+    String? country,
+    String? diet,
+    String? course,
+  }) => _store.updateFilters(
+        url: url,
+        continent: continent,
+        country: country,
+        diet: diet,
+        course: course,
+      );
 
   @override
   Future<void> delete(String url) => _store.delete(url);

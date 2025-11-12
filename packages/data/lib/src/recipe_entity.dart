@@ -16,6 +16,8 @@ class RecipeEntity extends HiveObject {
     required this.searchableText,
     this.country,
     this.continent,
+    this.diet,
+    this.course,
     this.description,
     this.imageUrl,
     this.author,
@@ -38,6 +40,8 @@ class RecipeEntity extends HiveObject {
   final String searchableText;
   final String? country;
   final String? continent;
+  final String? diet;
+  final String? course;
   final String? description;
   final String? imageUrl;
   final String? author;
@@ -55,16 +59,8 @@ class RecipeEntity extends HiveObject {
       .toList(growable: false);
 
   List<String> get effectiveCategories {
-    final baseCategories =
-        categories.isNotEmpty ? categories : _extractCategories(_metadataMap);
-    final augmented = <String>{...baseCategories};
-    if (country != null && country!.isNotEmpty) {
-      augmented.add(country!);
-    }
-    if (continent != null && continent!.isNotEmpty) {
-      augmented.add(continent!);
-    }
-    return augmented.toList(growable: false);
+    // Only return manually set categories, no automatic extraction
+    return categories;
   }
 
   String get _effectiveSearchableText => searchableText.isNotEmpty
@@ -82,6 +78,8 @@ class RecipeEntity extends HiveObject {
             _metadataMap['keywords']?.toString(),
             country,
             continent,
+            diet,
+            course,
           ],
         );
 
@@ -91,20 +89,48 @@ class RecipeEntity extends HiveObject {
 
   bool matchesFilters({
     required String query,
-    required Set<String> selectedCategories,
+    String? selectedContinent,
+    String? selectedCountry,
+    String? selectedDiet,
+    String? selectedCourse,
   }) {
     final matchesQuery =
         query.isEmpty || _effectiveSearchableText.contains(query);
-    if (selectedCategories.isEmpty) {
-      return matchesQuery;
+    
+    if (!matchesQuery) return false;
+    
+    // If no filters are selected, show all recipes that match the query
+    if (selectedContinent == null && 
+        selectedCountry == null && 
+        selectedDiet == null && 
+        selectedCourse == null) {
+      return true;
     }
-    final normalized =
-        normalizedCategories.map((category) => category.toLowerCase()).toSet();
-    final matchesCategory = normalized.any(selectedCategories.contains);
-    return matchesQuery && matchesCategory;
+    
+    // Check each filter - all selected filters must match
+    if (selectedContinent != null && continent != selectedContinent) {
+      return false;
+    }
+    if (selectedCountry != null && country != selectedCountry) {
+      return false;
+    }
+    if (selectedDiet != null && diet != selectedDiet) {
+      return false;
+    }
+    if (selectedCourse != null && course != selectedCourse) {
+      return false;
+    }
+    
+    return true;
   }
 
-  RecipeEntity copyWith({bool? isFavorite}) {
+  RecipeEntity copyWith({
+    bool? isFavorite,
+    String? continent,
+    String? country,
+    String? diet,
+    String? course,
+  }) {
     return RecipeEntity(
       url: url,
       title: title,
@@ -114,8 +140,10 @@ class RecipeEntity extends HiveObject {
       strategy: strategy,
       categories: categories,
       searchableText: searchableText,
-      country: country,
-      continent: continent,
+      country: country ?? this.country,
+      continent: continent ?? this.continent,
+      diet: diet ?? this.diet,
+      course: course ?? this.course,
       description: description,
       imageUrl: imageUrl,
       author: author,
@@ -332,6 +360,8 @@ class RecipeEntityAdapter extends TypeAdapter<RecipeEntity> {
       searchableText: fields[16] as String? ?? '',
       country: fields[17] as String?,
       continent: fields[18] as String?,
+      diet: fields[20] as String?,
+      course: fields[21] as String?,
       isFavorite: fields[19] as bool? ?? false,
     );
   }
@@ -339,7 +369,7 @@ class RecipeEntityAdapter extends TypeAdapter<RecipeEntity> {
   @override
   void write(BinaryWriter writer, RecipeEntity obj) {
     writer
-      ..writeByte(20)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.url)
       ..writeByte(1)
@@ -379,7 +409,11 @@ class RecipeEntityAdapter extends TypeAdapter<RecipeEntity> {
       ..writeByte(18)
       ..write(obj.continent)
       ..writeByte(19)
-      ..write(obj.isFavorite);
+      ..write(obj.isFavorite)
+      ..writeByte(20)
+      ..write(obj.diet)
+      ..writeByte(21)
+      ..write(obj.course);
   }
 }
 

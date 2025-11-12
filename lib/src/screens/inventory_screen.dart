@@ -218,9 +218,24 @@ class _InventoryTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      quantityText,
-                      style: theme.textTheme.titleMedium,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          quantityText,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        if (item.costPerUnit != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '\$${(item.costPerUnit! * item.quantity).toStringAsFixed(2)}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -285,6 +300,7 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
   late final TextEditingController _categoryController;
   late final TextEditingController _locationController;
   late final TextEditingController _noteController;
+  late final TextEditingController _costController;
   DateTime? _expiry;
 
   @override
@@ -299,6 +315,9 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
     _categoryController = TextEditingController(text: item?.category ?? '');
     _locationController = TextEditingController(text: item?.location ?? '');
     _noteController = TextEditingController(text: item?.note ?? '');
+    _costController = TextEditingController(
+      text: item?.costPerUnit?.toStringAsFixed(2) ?? '',
+    );
     _expiry = item?.expiry;
   }
 
@@ -310,6 +329,7 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
     _categoryController.dispose();
     _locationController.dispose();
     _noteController.dispose();
+    _costController.dispose();
     super.dispose();
   }
 
@@ -411,6 +431,42 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
               Row(
                 children: [
                   Expanded(
+                    child: TextFormField(
+                      controller: _costController,
+                      decoration: const InputDecoration(
+                        labelText: 'Cost per unit (optional)',
+                        hintText: 'e.g., 2.50',
+                        prefixText: '\$ ',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (value) {
+                        if (value != null && value.trim().isNotEmpty) {
+                          final number = double.tryParse(value.trim());
+                          if (number == null || number < 0) {
+                            return 'Cost must be a positive number';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Tooltip(
+                    message: 'Suggest cost from default prices',
+                    child: OutlinedButton(
+                      onPressed: () => _suggestCost(),
+                      child: const Icon(Icons.auto_awesome_outlined, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _pickExpiry,
                       icon: const Icon(Icons.event_outlined),
@@ -445,6 +501,36 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
     );
   }
 
+  void _suggestCost() {
+    final itemName = _nameController.text.trim();
+    if (itemName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter an item name first')),
+      );
+      return;
+    }
+    
+    final suggestedPrice = DefaultIngredientPrices.getPrice(itemName);
+    if (suggestedPrice != null) {
+      setState(() {
+        _costController.text = suggestedPrice.toStringAsFixed(2);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Suggested price: \$${suggestedPrice.toStringAsFixed(2)} per unit'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No default price available for this item'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Future<void> _pickExpiry() async {
     final now = DateTime.now();
     final current = _expiry ?? now;
@@ -464,6 +550,9 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
       return;
     }
     final quantity = double.tryParse(_quantityController.text.trim()) ?? 1;
+    final costPerUnit = _costController.text.trim().isEmpty
+        ? null
+        : double.tryParse(_costController.text.trim());
     final item = widget.item;
     if (item == null) {
       await AppRepositories.instance.inventory.addItem(
@@ -483,6 +572,7 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
               ? null
               : _noteController.text.trim(),
           expiry: _expiry,
+          costPerUnit: costPerUnit,
         ),
       );
     } else {
@@ -503,6 +593,7 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
             ? null
             : _noteController.text.trim(),
         expiry: _expiry,
+        costPerUnit: costPerUnit,
       );
     }
     if (!mounted) return;
@@ -580,16 +671,42 @@ class _InventoryEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.inventory_2_outlined, size: 48, color: Colors.black26),
-          SizedBox(height: 12),
-          Text('No inventory items yet.'),
-          SizedBox(height: 8),
-          Text('Add products you have on hand to track what is available.'),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                size: 64,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No inventory items yet',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Add products you have on hand to track what is available.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

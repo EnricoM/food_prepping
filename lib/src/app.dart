@@ -7,7 +7,9 @@ import 'package:core/core.dart';
 import 'navigation/app_drawer.dart';
 import 'screens/add_recipe_screen.dart';
 import 'screens/domain_discovery_screen.dart';
+import 'screens/visited_domains_screen.dart';
 import 'screens/favorites_screen.dart';
+import 'screens/inventory_recipe_suggestions_screen.dart';
 import 'screens/filter_recipes_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/manual_recipe_screen.dart';
@@ -18,6 +20,7 @@ import 'screens/stored_recipes_screen.dart';
 import 'screens/inventory_screen.dart';
 import 'screens/barcode_scan_screen.dart';
 import 'screens/receipt_scan_screen.dart';
+import 'screens/batch_cooking_screen.dart';
 
 class RecipeParserApp extends StatelessWidget {
   const RecipeParserApp({super.key});
@@ -42,13 +45,17 @@ class RecipeParserApp extends StatelessWidget {
           foregroundColor: colorScheme.onPrimary,
           elevation: 0,
           centerTitle: true,
+          shadowColor: Colors.black.withValues(alpha: 0.1),
         ),
         cardTheme: CardThemeData(
           color: colorScheme.surface,
           margin: EdgeInsets.zero,
+          elevation: 2,
+          shadowColor: Colors.black.withValues(alpha: 0.08),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          surfaceTintColor: Colors.transparent,
         ),
         chipTheme:
             ChipThemeData.fromDefaults(
@@ -64,19 +71,51 @@ class RecipeParserApp extends StatelessWidget {
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
             textStyle: const TextStyle(fontWeight: FontWeight.w600),
+            elevation: 2,
+            shadowColor: Colors.black.withValues(alpha: 0.2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-            side: BorderSide(color: colorScheme.primary),
+            side: BorderSide(color: colorScheme.primary, width: 1.5),
             foregroundColor: colorScheme.primary,
             textStyle: const TextStyle(fontWeight: FontWeight.w600),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
         drawerTheme: DrawerThemeData(
           backgroundColor: const Color(0xFFE9F7EE),
           surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: colorScheme.surface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
         navigationDrawerTheme: NavigationDrawerThemeData(
           indicatorColor: colorScheme.secondaryContainer,
@@ -118,6 +157,11 @@ class RecipeParserApp extends StatelessWidget {
           onRecipeTap: (ctx, entity) =>
               pushRecipeDetails(ctx, entity.toRecipe(), entity: entity),
         ),
+        BatchCookingScreen.routeName: (context) => BatchCookingScreen(
+          drawer: const AppDrawer(currentRoute: BatchCookingScreen.routeName),
+          onRecipeTap: (ctx, entity) =>
+              pushRecipeDetails(ctx, entity.toRecipe(), entity: entity),
+        ),
         FavoritesScreen.routeName: (context) => FavoritesScreen(
           drawer: const AppDrawer(currentRoute: FavoritesScreen.routeName),
           onRecipeTap: (ctx, entity) =>
@@ -143,6 +187,12 @@ class RecipeParserApp extends StatelessWidget {
               ),
             );
           },
+        ),
+        VisitedDomainsScreen.routeName: (context) => const VisitedDomainsScreen(
+          drawer: AppDrawer(currentRoute: VisitedDomainsScreen.routeName),
+        ),
+        InventoryRecipeSuggestionsScreen.routeName: (context) => const InventoryRecipeSuggestionsScreen(
+          drawer: AppDrawer(currentRoute: InventoryRecipeSuggestionsScreen.routeName),
         ),
         MealPlanScreen.routeName: (context) => MealPlanScreen(
           drawer: const AppDrawer(currentRoute: MealPlanScreen.routeName),
