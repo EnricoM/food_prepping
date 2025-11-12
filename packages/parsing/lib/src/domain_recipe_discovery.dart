@@ -14,7 +14,7 @@ class DomainRecipeDiscovery {
   Future<List<Uri>> discoverRecipes(
     String domain, {
     int maxSitemaps = 10,
-    int maxUrls = 200,
+    int maxUrls = 750,
   }) async {
     final normalized = _normalizeDomain(domain);
     final baseHost = normalized.host;

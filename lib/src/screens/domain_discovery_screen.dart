@@ -300,7 +300,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
       _selectedUrls.clear();
     });
     try {
-      final urls = await _discovery.discoverRecipes(domain);
+      final urls = await _discovery.discoverRecipes(domain, maxUrls: 750);
       if (!mounted) return;
       setState(() {
         _isLoading = false;
