@@ -49,6 +49,28 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
   bool _isLoading = false;
   bool _isFiltering = false;
   String? _error;
+  bool _initializedFromArgs = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initializedFromArgs) {
+      return;
+    }
+    _initializedFromArgs = true;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      final trimmed = args.trim();
+      if (trimmed.isNotEmpty) {
+        _domainController.text = trimmed;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _discover();
+          }
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {

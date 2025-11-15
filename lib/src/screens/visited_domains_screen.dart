@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import 'domain_discovery_screen.dart';
 import '../widgets/back_aware_app_bar.dart';
 
 class VisitedDomainsScreen extends StatelessWidget {
@@ -64,8 +65,9 @@ class VisitedDomainsScreen extends StatelessWidget {
                 final domain = entry.key;
                 final urls = entry.value;
                 final count = urls.length;
-                final latestImport = urls.map((e) => e.importedAt).reduce((a, b) => a.isAfter(b) ? a : b);
-
+                final latestImport = urls
+                    .map((e) => e.importedAt)
+                    .reduce((a, b) => a.isAfter(b) ? a : b);
                 return Card(
                   child: ExpansionTile(
                     leading: const Icon(Icons.public),
@@ -73,24 +75,40 @@ class VisitedDomainsScreen extends StatelessWidget {
                     subtitle: Text(
                       '$count page${count == 1 ? '' : 's'} imported',
                     ),
-                    trailing: Text(
-                      _formatDate(latestImport),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Last import: ${_formatDate(latestImport)}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                const Spacer(),
+                                TextButton.icon(
+                                  onPressed: () => Navigator.of(context)
+                                      .pushNamed(
+                                    DomainDiscoveryScreen.routeName,
+                                    arguments: domain,
+                                  ),
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Scan for new recipes'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
                             Text(
-                              'Imported Pages:',
+                              'Imported pages',
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 8),
                             ...(() {
                               final sorted = urls.toList()
-                                ..sort((a, b) => b.importedAt.compareTo(a.importedAt));
+                                ..sort((a, b) =>
+                                    b.importedAt.compareTo(a.importedAt));
                               return sorted.take(10).map((urlEntity) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 4),
@@ -101,15 +119,23 @@ class VisitedDomainsScreen extends StatelessWidget {
                                       Expanded(
                                         child: Text(
                                           urlEntity.url,
-                                          style: Theme.of(context).textTheme.bodySmall,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       Text(
                                         _formatDate(urlEntity.importedAt),
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.6),
                                             ),
                                       ),
                                     ],
@@ -122,8 +148,14 @@ class VisitedDomainsScreen extends StatelessWidget {
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Text(
                                   '... and ${urls.length - 10} more',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.6),
                                       ),
                                 ),
                               ),
