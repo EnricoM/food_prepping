@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -25,7 +26,7 @@ class HomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Recipe Parser')),
+      appBar: const BackAwareAppBar(title: Text('Recipe Parser')),
       drawer: const AppDrawer(currentRoute: routeName),
       body: SafeArea(
         child: SingleChildScrollView(

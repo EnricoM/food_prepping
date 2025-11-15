@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 
 class FilterRecipesScreen extends StatefulWidget {
   const FilterRecipesScreen({
@@ -37,7 +38,7 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Filter recipes')),
+      appBar: const BackAwareAppBar(title: Text('Filter recipes')),
       drawer: widget.drawer ?? const AppDrawer(currentRoute: FilterRecipesScreen.routeName),
       body: SafeArea(
         child: CustomScrollView(

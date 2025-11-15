@@ -8,6 +8,7 @@ import 'package:core/core.dart';
 import 'package:data/data.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 
 class DomainDiscoveryScreen extends StatefulWidget {
   const DomainDiscoveryScreen({
@@ -72,7 +73,8 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
     _selectedUrls.removeWhere((url) => !successUrls.contains(url));
     final hasSelection = _selectedUrls.isNotEmpty;
     return Scaffold(
-      appBar: AppBar(title: const Text('Discover recipes by domain')),
+      appBar:
+          const BackAwareAppBar(title: Text('Discover recipes by domain')),
       drawer:
           widget.drawer ??
           const AppDrawer(currentRoute: DomainDiscoveryScreen.routeName),

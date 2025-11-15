@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 import 'recipe_detail_screen.dart';
 
 class InventoryRecipeSuggestionsScreen extends StatelessWidget {
@@ -16,7 +17,7 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('What Can I Make?')),
+      appBar: const BackAwareAppBar(title: Text('What Can I Make?')),
       drawer: drawer ?? const AppDrawer(currentRoute: InventoryRecipeSuggestionsScreen.routeName),
       body: SafeArea(
         child: StreamBuilder<List<InventoryItem>>(

@@ -6,6 +6,7 @@ import 'package:shared_ui/shared_ui.dart';
 // ignore_for_file: use_build_context_synchronously
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 import 'barcode_scan_screen.dart';
 import 'receipt_scan_screen.dart';
 
@@ -23,9 +24,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inventory'),
-        actions: const [_InventoryMenu()],
+      appBar: const BackAwareAppBar(
+        title: Text('Inventory'),
+        actions: [_InventoryMenu()],
       ),
       drawer: const AppDrawer(currentRoute: InventoryScreen.routeName),
       floatingActionButton: FloatingActionButton(

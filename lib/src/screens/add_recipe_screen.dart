@@ -8,6 +8,7 @@ import 'package:parsing/parsing.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({
@@ -61,7 +62,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Add recipe from URL')),
+      appBar: const BackAwareAppBar(title: Text('Add recipe from URL')),
       drawer:
           widget.drawer ?? const AppDrawer(currentRoute: AddRecipeScreen.routeName),
       body: SafeArea(

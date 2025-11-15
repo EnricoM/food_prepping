@@ -3,6 +3,8 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../widgets/back_aware_app_bar.dart';
+
 class RecipeDetailArgs {
   RecipeDetailArgs({required this.recipe, this.entity});
 
@@ -36,7 +38,7 @@ class RecipeDetailScreen extends StatelessWidget {
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: BackAwareAppBar(
           title: Text(recipe.title),
           actions: [
             IconButton(

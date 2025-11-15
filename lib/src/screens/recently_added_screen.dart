@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 import 'widgets/recipe_tile.dart';
 
 class RecentlyAddedScreen extends StatelessWidget {
@@ -21,7 +22,7 @@ class RecentlyAddedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Recently added')),
+      appBar: const BackAwareAppBar(title: Text('Recently added')),
       drawer: drawer ?? const AppDrawer(currentRoute: routeName),
       body: SafeArea(
         child: Padding(

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_ui/shared_ui.dart';
+import '../widgets/back_aware_app_bar.dart';
 
 enum BarcodeScanTarget { inventory, shoppingList }
 
@@ -48,7 +49,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Barcode scanner')),
+      appBar: const BackAwareAppBar(title: Text('Barcode scanner')),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

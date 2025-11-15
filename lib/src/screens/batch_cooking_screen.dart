@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 import 'widgets/recipe_tile.dart';
 
 class BatchCookingScreen extends StatelessWidget {
@@ -23,8 +24,8 @@ class BatchCookingScreen extends StatelessWidget {
     final inset = responsivePageInsets(context);
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Batch Cooking'),
+      appBar: const BackAwareAppBar(
+        title: Text('Batch Cooking'),
       ),
       drawer: drawer ?? const AppDrawer(currentRoute: routeName),
       body: SafeArea(

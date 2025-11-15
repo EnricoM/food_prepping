@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 import 'barcode_scan_screen.dart';
 import 'receipt_scan_screen.dart';
 
@@ -28,9 +29,9 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shopping list'),
-        actions: const [_ShoppingListMenu()],
+      appBar: const BackAwareAppBar(
+        title: Text('Shopping list'),
+        actions: [_ShoppingListMenu()],
       ),
       drawer: const AppDrawer(currentRoute: ShoppingListScreen.routeName),
       floatingActionButton: FloatingActionButton(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
+import '../widgets/back_aware_app_bar.dart';
 import 'recipe_detail_screen.dart';
 
 class ManualRecipeScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Create manual recipe')),
+      appBar: const BackAwareAppBar(title: Text('Create manual recipe')),
       drawer: widget.drawer ??
           const AppDrawer(currentRoute: ManualRecipeScreen.routeName),
       body: SafeArea(

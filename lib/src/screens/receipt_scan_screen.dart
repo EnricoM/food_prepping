@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../widgets/back_aware_app_bar.dart';
+
 enum ReceiptScanTarget { inventory, shoppingList }
 
 class ReceiptScanScreen extends StatefulWidget {
@@ -42,7 +44,7 @@ class _ReceiptScanScreenState extends State<ReceiptScanScreen> {
         : 'Scan receipt to add to shopping list';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Receipt scanner')),
+      appBar: const BackAwareAppBar(title: Text('Receipt scanner')),
       body: SafeArea(
         child: Padding(
           padding: inset,
