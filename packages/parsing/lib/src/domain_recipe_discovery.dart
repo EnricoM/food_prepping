@@ -11,14 +11,21 @@ class DomainRecipeDiscovery {
       : _client = client ?? http.Client();
 
   final http.Client _client;
-  static const _defaultHeaders = {
-    'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-            '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept':
-        'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.9',
-  };
+  final Map<String, String> _cookieJar = {};
+  static const _headerCandidates = [
+    {
+      'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+              '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept':
+          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+    },
+    {
+      'User-Agent': 'curl/8.5.0',
+      'Accept': '*/*',
+    },
+  ];
 
   static final Set<String> _positivePathIndicators = {
     'recipe',
@@ -244,19 +251,13 @@ class DomainRecipeDiscovery {
     return paths.map((path) => base.replace(path: path));
   }
 
-  Future<String?> _fetchText(
-    Uri uri, {
-    Map<String, String>? headers,
-  }) async {
-    try {
-      final response = await _client
-          .get(uri, headers: headers ?? _defaultHeaders)
-          .timeout(const Duration(seconds: 15));
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return response.body;
-      }
-    } catch (_) {
+  Future<String?> _fetchText(Uri uri) async {
+    final response = await _sendRequest(uri);
+    if (response == null) {
       return null;
+    }
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
     }
     return null;
   }
@@ -321,6 +322,105 @@ class DomainRecipeDiscovery {
 
     return discovered;
   }
+
+  Map<String, String> _headersFor(Uri uri, Map<String, String> baseHeaders) {
+    final headers = Map<String, String>.from(baseHeaders);
+    final cookie = _cookieJar[uri.host];
+    if (cookie != null && cookie.isNotEmpty) {
+      headers['Cookie'] = cookie;
+    }
+    return headers;
+  }
+
+  Future<http.Response?> _sendRequest(Uri uri) async {
+    http.Response? lastResponse;
+    for (final candidate in _headerCandidates) {
+      final response = await _sendWithHeaders(uri, candidate);
+      if (response == null) {
+        continue;
+      }
+      lastResponse = response;
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        return response;
+      }
+    }
+    return lastResponse;
+  }
+
+  Future<http.Response?> _sendWithHeaders(
+    Uri uri,
+    Map<String, String> baseHeaders,
+  ) async {
+    http.Response response;
+    try {
+      response = await _client
+          .get(uri, headers: _headersFor(uri, baseHeaders))
+          .timeout(const Duration(seconds: 15));
+    } catch (_) {
+      return null;
+    }
+
+    if (_needsCookieRetry(response.statusCode)) {
+      final responseCookies =
+          _cookieHeaderFromSetCookie(response.headers['set-cookie']);
+      if (responseCookies != null) {
+        _cookieJar[uri.host] = responseCookies;
+        try {
+          response = await _client
+              .get(uri, headers: _headersFor(uri, baseHeaders))
+              .timeout(const Duration(seconds: 15));
+        } catch (_) {
+          return null;
+        }
+        if (!_needsCookieRetry(response.statusCode)) {
+          _updateCookieJar(uri, response.headers['set-cookie']);
+          return response;
+        }
+      }
+
+      final hostCookies = await _fetchHostCookies(uri, baseHeaders);
+      if (hostCookies != null) {
+        _cookieJar[uri.host] = hostCookies;
+        try {
+          response = await _client
+              .get(uri, headers: _headersFor(uri, baseHeaders))
+              .timeout(const Duration(seconds: 15));
+        } catch (_) {
+          return null;
+        }
+      }
+    }
+
+    _updateCookieJar(uri, response.headers['set-cookie']);
+    return response;
+  }
+
+  Future<String?> _fetchHostCookies(
+    Uri uri,
+    Map<String, String> baseHeaders,
+  ) async {
+    final root = uri.replace(path: '/', query: null, fragment: null);
+    try {
+      final headers = Map<String, String>.from(baseHeaders)
+        ..remove('Accept-Encoding');
+      final response = await _client
+          .get(root, headers: headers)
+          .timeout(const Duration(seconds: 15));
+      return _cookieHeaderFromSetCookie(response.headers['set-cookie']);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _updateCookieJar(Uri uri, String? setCookie) {
+    final cookie = _cookieHeaderFromSetCookie(setCookie);
+    if (cookie != null) {
+      _cookieJar[uri.host] = cookie;
+    }
+  }
+
+  bool _needsCookieRetry(int statusCode) =>
+      statusCode == 401 || statusCode == 403 || statusCode == 503;
 
   bool _isSameHost(Uri uri, String canonicalHost) {
     if (canonicalHost.isEmpty) {
@@ -485,6 +585,19 @@ class DomainRecipeDiscovery {
     } catch (_) {
       return null;
     }
+  }
+
+  String? _cookieHeaderFromSetCookie(String? setCookie) {
+    if (setCookie == null || setCookie.isEmpty) {
+      return null;
+    }
+    final matches = RegExp(r'([^=,\s]+=[^;]+)').allMatches(setCookie);
+    final values =
+        matches.map((match) => match.group(0)).whereType<String>().toList();
+    if (values.isEmpty) {
+      return null;
+    }
+    return values.join('; ');
   }
 }
 
