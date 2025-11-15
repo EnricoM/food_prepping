@@ -499,7 +499,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
                                 ],
                               ),
                             );
-                          }).toList(),
+                          }),
                         ],
                       ] else ...[
                         Row(

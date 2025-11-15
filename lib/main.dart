@@ -2,6 +2,7 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 
 import 'src/app.dart';
+import 'src/services/measurement_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,5 +19,6 @@ Future<void> main() async {
       inventory: HiveInventoryRepository(),
     ),
   );
+  await MeasurementPreferences.instance.init();
   runApp(const RecipeParserApp());
 }

@@ -613,13 +613,13 @@ class _CategoryGroupedView extends StatelessWidget {
     return ListView(
       children: [
         // Unchecked items grouped by category
-        ...uncheckedGrouped.entries
-            .map((entry) => _CategorySection(
-                  category: entry.key,
-                  items: entry.value,
-                  onToggle: onToggle,
-                ))
-            .toList(),
+        ...uncheckedGrouped.entries.map(
+          (entry) => _CategorySection(
+            category: entry.key,
+            items: entry.value,
+            onToggle: onToggle,
+          ),
+        ),
         if (checked.isNotEmpty) ...[
           const Divider(height: 32),
           Padding(
@@ -631,14 +631,14 @@ class _CategoryGroupedView extends StatelessWidget {
               ),
             ),
           ),
-          ...checkedGrouped.entries
-              .map((entry) => _CategorySection(
-                    category: entry.key,
-                    items: entry.value,
-                    onToggle: onToggle,
-                    isChecked: true,
-                  ))
-              .toList(),
+          ...checkedGrouped.entries.map(
+            (entry) => _CategorySection(
+              category: entry.key,
+              items: entry.value,
+              onToggle: onToggle,
+              isChecked: true,
+            ),
+          ),
         ],
       ],
     );

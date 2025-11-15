@@ -239,6 +239,7 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
         labelText: label,
         border: const OutlineInputBorder(),
       ),
+      // ignore: deprecated_member_use
       value: value,
       items: [
         const DropdownMenuItem<String>(

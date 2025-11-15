@@ -21,6 +21,7 @@ import 'screens/inventory_screen.dart';
 import 'screens/barcode_scan_screen.dart';
 import 'screens/receipt_scan_screen.dart';
 import 'screens/batch_cooking_screen.dart';
+import 'screens/settings_screen.dart';
 
 class RecipeParserApp extends StatelessWidget {
   const RecipeParserApp({super.key});
@@ -191,6 +192,7 @@ class RecipeParserApp extends StatelessWidget {
         VisitedDomainsScreen.routeName: (context) => const VisitedDomainsScreen(
           drawer: AppDrawer(currentRoute: VisitedDomainsScreen.routeName),
         ),
+        SettingsScreen.routeName: (context) => const SettingsScreen(),
         InventoryRecipeSuggestionsScreen.routeName: (context) => const InventoryRecipeSuggestionsScreen(
           drawer: AppDrawer(currentRoute: InventoryRecipeSuggestionsScreen.routeName),
         ),

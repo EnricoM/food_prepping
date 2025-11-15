@@ -3,7 +3,10 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../services/measurement_preferences.dart';
+import '../utils/ingredient_converter.dart';
 import '../widgets/back_aware_app_bar.dart';
+import 'settings_screen.dart';
 
 class RecipeDetailArgs {
   RecipeDetailArgs({required this.recipe, this.entity});
@@ -389,41 +392,88 @@ class _IngredientsTabState extends State<_IngredientsTab> {
             ),
           ),
         ),
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            itemCount: displayIngredients.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final ingredient = displayIngredients[index];
-              final isScaled = _scaledRecipe != null;
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        AnimatedBuilder(
+          animation: MeasurementPreferences.instance,
+          builder: (context, _) {
+            final measurementSystem = MeasurementPreferences.instance.system;
+            final converter = IngredientConverter(measurementSystem);
+            final convertedIngredients = displayIngredients
+                .map(converter.convert)
+                .toList(growable: false);
+            final isScaled = _scaledRecipe != null;
+            return Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    '• ',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isScaled
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.straighten_outlined,
+                          size: 16,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Showing ${measurementSystem.displayName}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context)
+                              .pushNamed(SettingsScreen.routeName),
+                          child: const Text('Change'),
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 8),
                   Expanded(
-                    child: Text(
-                      ingredient,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: isScaled
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface,
-                        fontWeight: isScaled ? FontWeight.w600 : FontWeight.normal,
-                      ),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: convertedIngredients.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final ingredient = convertedIngredients[index];
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '• ',
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isScaled
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                ingredient,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: isScaled
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.onSurface,
+                                  fontWeight: isScaled
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ],
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -1077,6 +1127,7 @@ class _FilterEditDialogState extends State<_FilterEditDialog> {
         labelText: label,
         border: const OutlineInputBorder(),
       ),
+      // ignore: deprecated_member_use
       value: value,
       items: [
         const DropdownMenuItem<String>(

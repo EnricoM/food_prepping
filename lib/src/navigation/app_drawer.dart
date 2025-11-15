@@ -28,6 +28,11 @@ class AppDrawer extends StatelessWidget {
               entries: _DrawerEntry.mealPlanningEntries,
               currentRoute: currentRoute,
             ),
+            _DrawerSection(
+              title: 'App',
+              entries: _DrawerEntry.appEntries,
+              currentRoute: currentRoute,
+            ),
             const Padding(
               padding: EdgeInsets.all(16),
               child: Text(
@@ -136,6 +141,14 @@ class _DrawerEntry {
       icon: Icons.calendar_month_outlined,
       label: 'Meal planner',
       routeName: '/meal-plan',
+    ),
+  ];
+
+  static final appEntries = <_DrawerEntry>[
+    const _DrawerEntry(
+      icon: Icons.settings_outlined,
+      label: 'Settings',
+      routeName: '/settings',
     ),
   ];
 }
