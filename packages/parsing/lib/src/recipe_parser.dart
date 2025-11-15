@@ -36,11 +36,10 @@ class RecipeParser {
       {
         'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-            '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept':
             'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9,nl;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
       },
       if (!hasCustomUserAgent) {'User-Agent': 'curl/8.5.0', 'Accept': '*/*'},
     ];
@@ -85,9 +84,8 @@ class RecipeParser {
       requestHeaders['Cookie'] = initialCookies;
     }
 
-    http.Response response = await _client
-        .get(uri, headers: requestHeaders)
-        .timeout(timeout);
+    http.Response response =
+        await _client.get(uri, headers: requestHeaders).timeout(timeout);
 
     if (!_shouldRetry(response.statusCode)) {
       return response;
@@ -99,9 +97,8 @@ class RecipeParser {
     if (responseCookies != null) {
       final retryHeaders = Map<String, String>.from(headers)
         ..['Cookie'] = responseCookies;
-      final retry = await _client
-          .get(uri, headers: retryHeaders)
-          .timeout(timeout);
+      final retry =
+          await _client.get(uri, headers: retryHeaders).timeout(timeout);
       if (!_shouldRetry(retry.statusCode)) {
         return retry;
       }
@@ -113,9 +110,8 @@ class RecipeParser {
       if (hostCookies != null) {
         final retryHeaders = Map<String, String>.from(headers)
           ..['Cookie'] = hostCookies;
-        final retry = await _client
-            .get(uri, headers: retryHeaders)
-            .timeout(timeout);
+        final retry =
+            await _client.get(uri, headers: retryHeaders).timeout(timeout);
         if (!_shouldRetry(retry.statusCode)) {
           return retry;
         }
@@ -137,9 +133,8 @@ class RecipeParser {
     try {
       final retryHeaders = Map<String, String>.from(headers)
         ..remove('Accept-Encoding');
-      final response = await _client
-          .get(rootUri, headers: retryHeaders)
-          .timeout(timeout);
+      final response =
+          await _client.get(rootUri, headers: retryHeaders).timeout(timeout);
       return _cookieHeaderFromSetCookie(response.headers['set-cookie']);
     } catch (_) {
       return null;
@@ -151,10 +146,8 @@ class RecipeParser {
       return null;
     }
     final matches = RegExp(r'([^=,\s]+=[^;]+)').allMatches(setCookie);
-    final values = matches
-        .map((match) => match.group(0))
-        .whereType<String>()
-        .toList();
+    final values =
+        matches.map((match) => match.group(0)).whereType<String>().toList();
     if (values.isEmpty) {
       return null;
     }
@@ -174,6 +167,11 @@ class RecipeParser {
     final microdataResult = _parseMicrodata(document, uri, notes);
     if (microdataResult != null) {
       return microdataResult;
+    }
+
+    final pluginResult = _parseRecipePlugins(document, uri, notes);
+    if (pluginResult != null) {
+      return pluginResult;
     }
 
     final heuristicResult = _parseHeuristic(document, uri, notes);
@@ -246,13 +244,40 @@ class RecipeParser {
     return null;
   }
 
+  RecipeParseResult? _parseRecipePlugins(
+    Document document,
+    Uri? baseUri,
+    List<String> notes,
+  ) {
+    final wpRecipe = _recipeFromWpRecipeMaker(document, baseUri);
+    if (wpRecipe != null) {
+      notes.add('Parsed recipe via WP Recipe Maker markup');
+      return RecipeParseResult(
+        recipe: wpRecipe,
+        strategy: 'WP Recipe Maker',
+        notes: notes,
+      );
+    }
+
+    final tastyRecipe = _recipeFromTastyRecipes(document, baseUri);
+    if (tastyRecipe != null) {
+      notes.add('Parsed recipe via Tasty Recipes markup');
+      return RecipeParseResult(
+        recipe: tastyRecipe,
+        strategy: 'Tasty Recipes',
+        notes: notes,
+      );
+    }
+
+    return null;
+  }
+
   RecipeParseResult? _parseHeuristic(
     Document document,
     Uri? baseUri,
     List<String> notes,
   ) {
-    final title =
-        _elementText(document.querySelector('h1')) ??
+    final title = _elementText(document.querySelector('h1')) ??
         _elementText(document.querySelector('title'));
     if (title == null) {
       return null;
@@ -412,8 +437,7 @@ class RecipeParser {
   }
 
   Recipe? _recipeFromMicrodata(Element node, Uri? baseUri) {
-    final title =
-        _elementText(node.querySelector('[itemprop="name"]')) ??
+    final title = _elementText(node.querySelector('[itemprop="name"]')) ??
         _elementText(node.querySelector('h1'));
     if (title == null) {
       return null;
@@ -436,11 +460,11 @@ class RecipeParser {
     final instructions = instructionNodes.isEmpty
         ? _collectListItems(node.querySelectorAll('ol li, ul li'))
         : instructionNodes
-              .expand((element) => _extractInstructionNode(element))
-              .nonNulls
-              .map(_clean)
-              .nonNulls
-              .toList();
+            .expand((element) => _extractInstructionNode(element))
+            .nonNulls
+            .map(_clean)
+            .nonNulls
+            .toList();
 
     if (ingredients.isEmpty || instructions.isEmpty) {
       return null;
@@ -449,8 +473,7 @@ class RecipeParser {
     final imgNode = node.querySelector('[itemprop="image"]');
     String? imageUrl;
     if (imgNode != null) {
-      imageUrl =
-          _elementAttr(imgNode, 'content') ??
+      imageUrl = _elementAttr(imgNode, 'content') ??
           _elementAttr(imgNode, 'src') ??
           _elementText(imgNode);
     }
@@ -639,10 +662,8 @@ class RecipeParser {
 
       if (node is Element &&
           (node.localName == 'ul' || node.localName == 'ol')) {
-        final listItems = node.children
-            .map((child) => _clean(child.text))
-            .nonNulls
-            .toList();
+        final listItems =
+            node.children.map((child) => _clean(child.text)).nonNulls.toList();
         if (listItems.isNotEmpty) {
           results.addAll(listItems);
         }
@@ -746,6 +767,159 @@ class RecipeParser {
 
   List<String> _collectListItems(List<Element> nodes) {
     return nodes.map((element) => _clean(element.text)).nonNulls.toList();
+  }
+
+  Recipe? _recipeFromWpRecipeMaker(Document document, Uri? baseUri) {
+    final container = document.querySelector('.wprm-recipe-container') ??
+        document.querySelector('.wprm-recipe');
+    if (container == null) {
+      return null;
+    }
+
+    final title = _elementText(container.querySelector('.wprm-recipe-name')) ??
+        _elementText(document.querySelector('h1'));
+    final ingredients = container
+        .querySelectorAll('.wprm-recipe-ingredients li')
+        .map((element) => _clean(element.text))
+        .nonNulls
+        .toList();
+    final instructionNodes =
+        container.querySelectorAll('.wprm-recipe-instruction-text');
+    final instructions = (instructionNodes.isNotEmpty
+            ? instructionNodes.map((element) => _clean(element.text))
+            : container
+                .querySelectorAll('.wprm-recipe-instructions li')
+                .map((element) => _clean(element.text)))
+        .nonNulls
+        .toList();
+
+    if (title == null || ingredients.isEmpty || instructions.isEmpty) {
+      return null;
+    }
+
+    final imageNode = container.querySelector('.wprm-recipe-image img');
+    final imageUrl = _firstNonEmptyAttribute(
+      imageNode,
+      const ['data-pin-media', 'data-lazy-src', 'data-src', 'src'],
+    );
+
+    final servingsValue =
+        _elementText(container.querySelector('.wprm-recipe-servings'));
+    final servingsUnit =
+        _elementText(container.querySelector('.wprm-recipe-servings-unit'));
+    final yieldValue = servingsValue == null
+        ? null
+        : servingsUnit == null
+            ? servingsValue
+            : '$servingsValue ${servingsUnit.trim()}';
+
+    final courseText =
+        _elementText(container.querySelector('.wprm-recipe-course'));
+    final cuisineText =
+        _elementText(container.querySelector('.wprm-recipe-cuisine'));
+    final dietText =
+        _elementText(container.querySelector('.wprm-recipe-suitablefordiet'));
+    final metadata = <String, Object?>{
+      'plugin': 'wp-recipe-maker',
+      if (servingsValue != null) 'servings': yieldValue,
+      if (courseText != null) 'course': courseText,
+      if (cuisineText != null) 'cuisine': cuisineText,
+      if (dietText != null) 'diet': dietText,
+    }..removeWhere((_, value) => value == null);
+
+    Duration? wpTime(String baseClass) {
+      final value =
+          _elementText(container.querySelector('.wprm-recipe-$baseClass'));
+      final unit =
+          _elementText(container.querySelector('.wprm-recipe-$baseClass-unit'));
+      return _durationFromValueAndUnit(value, unit);
+    }
+
+    return Recipe(
+      title: title,
+      description:
+          _elementText(container.querySelector('.wprm-recipe-summary')),
+      author: _elementText(container.querySelector('.wprm-recipe-author')),
+      imageUrl: _resolveUrl(imageUrl, baseUri),
+      ingredients: ingredients,
+      instructions: instructions,
+      sourceUrl: baseUri?.toString(),
+      yield: yieldValue,
+      prepTime: wpTime('prep_time'),
+      cookTime: wpTime('cook_time'),
+      totalTime: wpTime('total_time'),
+      metadata: metadata,
+    );
+  }
+
+  Recipe? _recipeFromTastyRecipes(Document document, Uri? baseUri) {
+    final container = document.querySelector('.tasty-recipes');
+    if (container == null) {
+      return null;
+    }
+
+    final title =
+        _elementText(container.querySelector('.tasty-recipes-title')) ??
+            _elementText(document.querySelector('h1'));
+    final ingredients = container
+        .querySelectorAll('.tasty-recipes-ingredients li')
+        .map((element) => _clean(element.text))
+        .nonNulls
+        .toList();
+    final instructions = container
+        .querySelectorAll('.tasty-recipes-instructions li')
+        .map((element) => _clean(element.text))
+        .nonNulls
+        .toList();
+
+    if (title == null || ingredients.isEmpty || instructions.isEmpty) {
+      return null;
+    }
+
+    final imageNode = container.querySelector('.tasty-recipes-image img');
+    final imageUrl = _firstNonEmptyAttribute(
+      imageNode,
+      const ['data-lazy-src', 'data-src', 'src'],
+    );
+    final yieldValue =
+        _elementText(container.querySelector('.tasty-recipes-yield'));
+
+    Duration? tastyTime(String selector) {
+      final value =
+          _elementText(container.querySelector('.tasty-recipes-$selector'));
+      final unit = _elementText(
+          container.querySelector('.tasty-recipes-$selector-unit'));
+      return _durationFromValueAndUnit(value, unit);
+    }
+
+    final courseText =
+        _elementText(container.querySelector('.tasty-recipes-course'));
+    final cuisineText =
+        _elementText(container.querySelector('.tasty-recipes-cuisine'));
+    final categoryText =
+        _elementText(container.querySelector('.tasty-recipes-category'));
+    final metadata = <String, Object?>{
+      'plugin': 'tasty-recipes',
+      if (courseText != null) 'course': courseText,
+      if (cuisineText != null) 'cuisine': cuisineText,
+      if (categoryText != null) 'category': categoryText,
+    }..removeWhere((_, value) => value == null);
+
+    return Recipe(
+      title: title,
+      description:
+          _elementText(container.querySelector('.tasty-recipes-description')),
+      author: _elementText(container.querySelector('.tasty-recipes-author')),
+      imageUrl: _resolveUrl(imageUrl, baseUri),
+      ingredients: ingredients,
+      instructions: instructions,
+      sourceUrl: baseUri?.toString(),
+      yield: yieldValue,
+      prepTime: tastyTime('prep-time'),
+      cookTime: tastyTime('cook-time'),
+      totalTime: tastyTime('total-time'),
+      metadata: metadata,
+    );
   }
 
   List<String> _extractIngredients(Map<String, Object?> node) {
@@ -1028,6 +1202,64 @@ String? _elementText(Element? element) => _clean(element?.text);
 
 String? _elementAttr(Element? element, String attribute) =>
     _clean(element?.attributes[attribute]);
+
+String? _firstNonEmptyAttribute(Element? element, List<String> attributes) {
+  if (element == null) {
+    return null;
+  }
+  for (final attribute in attributes) {
+    final value = _elementAttr(element, attribute);
+    if (value != null && value.isNotEmpty) {
+      return value;
+    }
+  }
+  return null;
+}
+
+Duration? _durationFromValueAndUnit(String? value, String? unit) {
+  if (value == null) {
+    return null;
+  }
+  final normalizedValue = value.replaceAll(RegExp(r'[^0-9.,/]'), '').trim();
+  if (normalizedValue.isEmpty) {
+    return null;
+  }
+
+  double? parsedNumber;
+  if (normalizedValue.contains('/')) {
+    final parts = normalizedValue.split('/');
+    if (parts.length == 2) {
+      final numerator = double.tryParse(parts[0]);
+      final denominator = double.tryParse(parts[1]);
+      if (numerator != null && denominator != null && denominator != 0) {
+        parsedNumber = numerator / denominator;
+      }
+    }
+  }
+  parsedNumber ??= double.tryParse(
+    normalizedValue.replaceAll(',', '.'),
+  );
+
+  if (parsedNumber == null) {
+    return null;
+  }
+
+  final normalizedUnit = unit?.toLowerCase() ?? '';
+  double minutesMultiplier = 1;
+  if (normalizedUnit.contains('hour') || normalizedUnit.contains('hr')) {
+    minutesMultiplier = 60;
+  } else if (normalizedUnit.contains('day')) {
+    minutesMultiplier = 60 * 24;
+  } else if (normalizedUnit.contains('second')) {
+    minutesMultiplier = 1 / 60;
+  }
+
+  final totalSeconds = (parsedNumber * minutesMultiplier * 60).round();
+  if (totalSeconds <= 0) {
+    return null;
+  }
+  return Duration(seconds: totalSeconds);
+}
 
 const Map<String, String> _diacriticMap = {
   'á': 'a',

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:core/core.dart';
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:parsing/parsing.dart';
 import 'package:shared_ui/shared_ui.dart';
 
@@ -74,9 +75,16 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 decoration: InputDecoration(
                   labelText: 'Recipe URL',
                   border: const OutlineInputBorder(),
-                  suffixIcon: _urlController.text.isEmpty
-                      ? null
-                      : IconButton(
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.paste),
+                        tooltip: 'Paste URL',
+                        onPressed: _pasteUrlFromClipboard,
+                      ),
+                      if (_urlController.text.isNotEmpty)
+                        IconButton(
                           icon: const Icon(Icons.clear),
                           tooltip: 'Clear URL',
                           onPressed: () {
@@ -87,6 +95,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                             });
                           },
                         ),
+                    ],
+                  ),
                 ),
                 keyboardType: TextInputType.url,
                 textInputAction: TextInputAction.go,
@@ -188,6 +198,25 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         SnackBar(content: Text('Failed to save recipe: $error')),
       );
     }
+  }
+
+  Future<void> _pasteUrlFromClipboard() async {
+    setState(() {
+      _urlController.clear();
+      _result = null;
+      _error = null;
+    });
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    final text = data?.text?.trim();
+    if (text == null || text.isEmpty) {
+      return;
+    }
+    setState(() {
+      _urlController.text = text;
+      _urlController.selection =
+          TextSelection.collapsed(offset: _urlController.text.length);
+    });
   }
 }
 
