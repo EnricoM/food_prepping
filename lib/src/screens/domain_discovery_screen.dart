@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:parsing/parsing.dart';
 import 'package:shared_ui/shared_ui.dart';
 import 'package:core/core.dart';
@@ -86,24 +87,22 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                 decoration: InputDecoration(
                   labelText: 'Domain (e.g. example.com)',
                   border: const OutlineInputBorder(),
-                  suffixIcon: _domainController.text.isEmpty
-                      ? null
-                      : IconButton(
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.paste),
+                        tooltip: 'Paste domain',
+                        onPressed: _pasteDomainFromClipboard,
+                      ),
+                      if (_domainController.text.isNotEmpty)
+                        IconButton(
                           icon: const Icon(Icons.clear),
                           tooltip: 'Clear domain',
-                          onPressed: () {
-                        _cancelFiltering = true;
-                            setState(() {
-                              _domainController.clear();
-                          _results.clear();
-                          _selectedUrls.clear();
-                          _isFiltering = false;
-                          _completedFilters = 0;
-                          _successfulFilters = 0;
-                              _error = null;
-                            });
-                          },
+                          onPressed: _clearDomainInput,
                         ),
+                    ],
+                  ),
                 ),
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => _discover(),
@@ -497,5 +496,33 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
         ),
       );
     }
+  }
+
+  void _clearDomainInput() {
+    _cancelFiltering = true;
+    setState(() {
+      _domainController.clear();
+      _results.clear();
+      _selectedUrls.clear();
+      _isFiltering = false;
+      _completedFilters = 0;
+      _successfulFilters = 0;
+      _error = null;
+    });
+  }
+
+  Future<void> _pasteDomainFromClipboard() async {
+    _clearDomainInput();
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    final text = data?.text?.trim();
+    if (text == null || text.isEmpty) {
+      return;
+    }
+    setState(() {
+      _domainController.text = text;
+      _domainController.selection =
+          TextSelection.collapsed(offset: _domainController.text.length);
+    });
   }
 }
