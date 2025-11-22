@@ -7,6 +7,7 @@ import '../services/measurement_preferences.dart';
 import '../utils/ingredient_converter.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'settings_screen.dart';
+import '../widgets/ad_banner.dart';
 
 class RecipeDetailArgs {
   RecipeDetailArgs({required this.recipe, this.entity});
@@ -475,6 +476,8 @@ class _IngredientsTabState extends State<_IngredientsTab> {
             );
           },
         ),
+        const SizedBox(height: 12),
+        const AdBanner(),
       ],
     );
   }

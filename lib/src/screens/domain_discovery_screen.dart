@@ -9,6 +9,7 @@ import 'package:data/data.dart';
 
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
+import '../widgets/ad_banner.dart';
 
 class DomainDiscoveryScreen extends StatefulWidget {
   const DomainDiscoveryScreen({
@@ -144,6 +145,8 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                     : const Icon(Icons.language),
                 label: Text(_isLoading ? 'Scanning…' : 'Scan domain'),
               ),
+              const SizedBox(height: 8),
+              const AdBanner(),
               if (_error != null) ...[
                 const SizedBox(height: 16),
                 Text(

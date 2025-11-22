@@ -1,0 +1,14 @@
+# Keystore configuration for release builds
+# Copy this file to key.properties and fill in your actual passwords
+
+storePassword=YOUR_KEYSTORE_PASSWORD_HERE
+keyPassword=YOUR_KEY_PASSWORD_HERE
+keyAlias=recipeparser
+storeFile=/home/enrico/keystores/recipe_parser_release.keystore
+
+# Instructions:
+# 1. Copy this file: cp key.properties.template key.properties
+# 2. Replace YOUR_KEYSTORE_PASSWORD_HERE with your keystore password
+# 3. Replace YOUR_KEY_PASSWORD_HERE with your key password (same as keystore if you pressed Enter)
+# 4. Verify the storeFile path is correct
+
