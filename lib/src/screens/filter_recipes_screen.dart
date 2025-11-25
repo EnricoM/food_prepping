@@ -4,6 +4,7 @@ import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
+import '../utils/countries.dart';
 
 class FilterRecipesScreen extends StatefulWidget {
   const FilterRecipesScreen({
@@ -84,12 +85,8 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
                     .toList()
                   ..sort();
                 
-                final availableCountries = recipes
-                    .map((e) => e.country)
-                    .whereType<String>()
-                    .toSet()
-                    .toList()
-                  ..sort();
+                // Use comprehensive list of all countries instead of just those in recipes
+                final availableCountries = List<String>.from(allCountries)..sort();
                 
                 final availableDiets = recipes
                     .map((e) => e.diet)

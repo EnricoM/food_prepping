@@ -29,6 +29,10 @@ abstract class RecipeRepository {
     String? diet,
     String? course,
   });
+  Future<void> updateRecipe({
+    required String url,
+    required Recipe recipe,
+  });
   Future<void> delete(String url);
   Future<void> clear();
 }
@@ -113,6 +117,12 @@ class HiveRecipeRepository implements RecipeRepository {
         diet: diet,
         course: course,
       );
+
+  @override
+  Future<void> updateRecipe({
+    required String url,
+    required Recipe recipe,
+  }) => _store.updateRecipe(url: url, recipe: recipe);
 
   @override
   Future<void> delete(String url) => _store.delete(url);

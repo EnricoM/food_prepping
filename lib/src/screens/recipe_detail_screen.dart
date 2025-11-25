@@ -8,6 +8,7 @@ import '../utils/ingredient_converter.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'settings_screen.dart';
 import '../widgets/ad_banner.dart';
+import 'edit_recipe_screen.dart';
 
 class RecipeDetailArgs {
   RecipeDetailArgs({required this.recipe, this.entity});
@@ -27,6 +28,47 @@ class RecipeDetailScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => _FilterEditDialog(entity: entity),
+    );
+  }
+
+  static void _showEditRecipe(BuildContext context, Recipe recipe, RecipeEntity entity) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditRecipeScreen(recipe: recipe, entity: entity),
+      ),
+    );
+  }
+
+  static void _showDeleteConfirmation(BuildContext context, RecipeEntity entity) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Recipe'),
+        content: Text('Are you sure you want to delete "${entity.title}"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              await AppRepositories.instance.recipes.delete(entity.url);
+              if (context.mounted) {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to previous screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Recipe deleted')),
+                );
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -89,6 +131,38 @@ class RecipeDetailScreen extends StatelessWidget {
                     ),
                   );
                 },
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _showEditRecipe(context, recipe, entity);
+                  } else if (value == 'delete') {
+                    _showDeleteConfirmation(context, entity);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined),
+                        SizedBox(width: 8),
+                        Text('Edit recipe'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete recipe', style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ],

@@ -143,6 +143,28 @@ class RecipeStore {
     );
   }
 
+  Future<void> updateRecipe({
+    required String url,
+    required Recipe recipe,
+  }) async {
+    final existing = _box.get(url);
+    if (existing == null) {
+      return;
+    }
+    final updated = RecipeEntity.fromRecipe(
+      recipe,
+      url: url,
+      strategy: existing.strategy,
+    ).copyWith(
+      isFavorite: existing.isFavorite,
+      continent: existing.continent,
+      country: existing.country,
+      diet: existing.diet,
+      course: existing.course,
+    );
+    await _box.put(url, updated);
+  }
+
   Future<void> delete(String url) => _box.delete(url);
 
   Future<void> clear() => _box.clear();
