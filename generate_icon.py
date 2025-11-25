@@ -1,157 +1,250 @@
 #!/usr/bin/env python3
 """
-Generate app icon for Recipe Parser / Food Prepping app
-Creates a 1024x1024 PNG with a modern, food-themed design
+Generate the Recipe Keeper app icon.
+Creates a 1024x1024 PNG featuring a jute bag filled with vegetables.
 """
 
-from PIL import Image, ImageDraw, ImageFont
-import math
+from PIL import Image, ImageDraw
 
-# App color scheme
-PRIMARY_GREEN = (67, 160, 71)  # #43A047
-DARK_GREEN = (27, 67, 50)  # #1B4332
-LIGHT_GREEN = (233, 247, 238)  # #E9F7EE
-WHITE = (255, 255, 255)
-ACCENT_ORANGE = (255, 152, 0)  # For visual interest
+# Palette
+PRIMARY_GREEN = (67, 160, 71)  # background
+DARK_GREEN = (27, 67, 50)
+LIGHT_GRADIENT = (110, 199, 128)
+JUTE_MAIN = (203, 164, 110)
+JUTE_SHADOW = (175, 135, 86)
+JUTE_HIGHLIGHT = (232, 199, 150)
+CARROT_ORANGE = (245, 140, 66)
+CARROT_SHADOW = (212, 110, 40)
+LEAF_GREEN = (129, 199, 132)
+DEEP_LEAF = (76, 175, 80)
+TOMATO_RED = (233, 77, 77)
+TOMATO_SHADOW = (193, 54, 54)
+ONION_PURPLE = (186, 104, 200)
+FORAGE_GREEN = (120, 170, 90)
+STITCH_COLOR = (255, 255, 255, 120)
 
 def create_app_icon():
     size = 1024
-    # Create image with rounded corners effect
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    center_x, center_y = size / 2, size / 2
+
+    # Base image with rounded corners
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    
-    # Background - gradient-like effect with primary green
-    # Draw rounded rectangle background
     corner_radius = size * 0.2
-    # Create a mask for rounded corners
-    mask = Image.new('L', (size, size), 0)
+
+    # Gradient background
+    for y in range(size):
+        ratio = y / size
+        r = int(PRIMARY_GREEN[0] * (1 - ratio * 0.15) + LIGHT_GRADIENT[0] * ratio * 0.05)
+        g = int(PRIMARY_GREEN[1] * (1 - ratio * 0.1) + LIGHT_GRADIENT[1] * ratio * 0.05)
+        b = int(PRIMARY_GREEN[2] * (1 - ratio * 0.05) + LIGHT_GRADIENT[2] * ratio * 0.05)
+        draw.line([(0, y), (size, y)], fill=(r, g, b, 255))
+
+    mask = Image.new("L", (size, size), 0)
     mask_draw = ImageDraw.Draw(mask)
     mask_draw.rounded_rectangle([(0, 0), (size, size)], corner_radius, fill=255)
-    
-    # Fill with gradient-like background
-    for y in range(size):
-        # Subtle gradient from lighter to darker green
-        ratio = y / size
-        r = int(PRIMARY_GREEN[0] * (1 - ratio * 0.2))
-        g = int(PRIMARY_GREEN[1] * (1 - ratio * 0.15))
-        b = int(PRIMARY_GREEN[2] * (1 - ratio * 0.1))
-        draw.line([(0, y), (size, y)], fill=(r, g, b, 255))
-    
-    # Apply rounded corners
     img.putalpha(mask)
-    
-    # Create a new image with the rounded background
-    final_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    final_draw = ImageDraw.Draw(final_img)
-    
-    # Draw rounded rectangle background
-    final_draw.rounded_rectangle([(0, 0), (size, size)], corner_radius, fill=PRIMARY_GREEN)
-    
-    # Add subtle inner shadow/bevel effect
+
+    base_draw = ImageDraw.Draw(img)
     padding = size * 0.03
-    final_draw.rounded_rectangle(
+    base_draw.rounded_rectangle(
         [(padding, padding), (size - padding, size - padding)],
         corner_radius * 0.9,
-        fill=None,
-        outline=(DARK_GREEN[0], DARK_GREEN[1], DARK_GREEN[2], 30),
-        width=int(size * 0.01)
+        outline=(0, 0, 0, 25),
+        width=int(size * 0.012),
     )
-    
-    # Design: Recipe card with chef's hat
-    center_x, center_y = size / 2, size / 2
-    
-    # Draw a stylized recipe card/notebook
-    card_width = size * 0.6
-    card_height = size * 0.5
-    card_x = center_x - card_width / 2
-    card_y = center_y - card_height / 2 + size * 0.05
-    
-    # Card background (white/light)
-    card_radius = size * 0.05
-    final_draw.rounded_rectangle(
-        [(card_x, card_y), (card_x + card_width, card_y + card_height)],
-        card_radius,
-        fill=WHITE,
-        outline=(DARK_GREEN[0], DARK_GREEN[1], DARK_GREEN[2], 100),
-        width=int(size * 0.008)
-    )
-    
-    # Add lines on the card (like a recipe notebook)
-    line_spacing = card_height / 6
-    for i in range(1, 6):
-        y = card_y + line_spacing * i
-        final_draw.line(
-            [(card_x + card_width * 0.15, y), (card_x + card_width * 0.85, y)],
-            fill=(200, 200, 200, 150),
-            width=int(size * 0.003)
-        )
-    
-    # Draw a simple chef's hat on top of the card
-    hat_base_y = card_y - size * 0.08
-    hat_width = size * 0.25
-    hat_height = size * 0.15
-    
-    # Hat base (white band)
-    hat_x = center_x - hat_width / 2
-    final_draw.ellipse(
-        [(hat_x, hat_base_y), (hat_x + hat_width, hat_base_y + hat_height * 0.4)],
-        fill=WHITE,
-        outline=(DARK_GREEN[0], DARK_GREEN[1], DARK_GREEN[2], 80),
-        width=int(size * 0.005)
-    )
-    
-    # Hat top (pleated)
-    hat_top_y = hat_base_y - hat_height * 0.6
-    # Draw pleats
-    pleat_count = 5
-    pleat_width = hat_width / pleat_count
-    for i in range(pleat_count):
-        pleat_x = hat_x + i * pleat_width
-        # Create a pleat shape (triangle-like)
-        points = [
-            (pleat_x + pleat_width / 2, hat_top_y),
-            (pleat_x, hat_base_y - hat_height * 0.3),
-            (pleat_x + pleat_width, hat_base_y - hat_height * 0.3),
-        ]
-        final_draw.polygon(points, fill=WHITE, outline=(DARK_GREEN[0], DARK_GREEN[1], DARK_GREEN[2], 60))
-    
-    # Add a small accent - maybe a spoon or fork
-    # Simple spoon on the side
-    spoon_x = card_x + card_width * 0.85
-    spoon_y = card_y + card_height * 0.3
-    spoon_length = size * 0.12
-    
-    # Spoon handle
-    final_draw.ellipse(
-        [(spoon_x - size * 0.02, spoon_y), (spoon_x + size * 0.02, spoon_y + spoon_length * 0.7)],
-        fill=DARK_GREEN,
-        outline=None
-    )
-    # Spoon head
-    final_draw.ellipse(
-        [(spoon_x - size * 0.025, spoon_y + spoon_length * 0.65), 
-         (spoon_x + size * 0.025, spoon_y + spoon_length)],
-        fill=DARK_GREEN,
-        outline=None
-    )
-    
-    # Add some decorative elements - small circles (like ingredients)
-    ingredient_size = size * 0.03
-    ingredient_positions = [
-        (card_x + card_width * 0.2, card_y + card_height * 0.2),
-        (card_x + card_width * 0.35, card_y + card_height * 0.15),
-        (card_x + card_width * 0.5, card_y + card_height * 0.25),
+
+    foreground = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    final_draw = ImageDraw.Draw(foreground)
+
+    # Bag dimensions
+    bag_width = size * 0.6
+    bag_height = size * 0.5
+    bag_top_width = bag_width * 0.85
+    bag_x = center_x - bag_width / 2
+    bag_y = center_y - bag_height / 2 + size * 0.15
+
+    top_left = (center_x - bag_top_width / 2, bag_y - size * 0.05)
+    top_right = (center_x + bag_top_width / 2, bag_y - size * 0.05)
+    bottom_left = (bag_x, bag_y + bag_height)
+    bottom_right = (bag_x + bag_width, bag_y + bag_height)
+
+    # Back shadow of bag
+    shadow_offset = size * 0.015
+    shadow_points = [
+        (top_left[0] + shadow_offset, top_left[1] + shadow_offset),
+        (top_right[0] + shadow_offset, top_right[1] + shadow_offset),
+        (bottom_right[0] + shadow_offset, bottom_right[1] + shadow_offset),
+        (bottom_left[0] + shadow_offset, bottom_left[1] + shadow_offset),
     ]
-    
-    for pos in ingredient_positions:
-        final_draw.ellipse(
-            [(pos[0] - ingredient_size/2, pos[1] - ingredient_size/2),
-             (pos[0] + ingredient_size/2, pos[1] + ingredient_size/2)],
-            fill=ACCENT_ORANGE,
-            outline=None
+    final_draw.polygon(shadow_points, fill=(0, 0, 0, 40))
+
+    # Bag base
+    bag_points = [top_left, top_right, bottom_right, bottom_left]
+    final_draw.polygon(bag_points, fill=JUTE_MAIN, outline=JUTE_SHADOW)
+
+    # Bag texture lines
+    for i in range(5):
+        y = bag_y + bag_height * 0.2 + i * (bag_height * 0.12)
+        final_draw.line(
+            [(bag_x + size * 0.05, y), (bag_x + bag_width - size * 0.05, y)],
+            fill=(255, 255, 255, 40),
+            width=int(size * 0.004),
         )
-    
-    return final_img
+
+    # Front pocket
+    pocket_height = bag_height * 0.28
+    pocket_y = bag_y + bag_height * 0.55
+    pocket_radius = size * 0.04
+    final_draw.rounded_rectangle(
+        [
+            (bag_x + bag_width * 0.12, pocket_y),
+            (bag_x + bag_width * 0.88, pocket_y + pocket_height),
+        ],
+        pocket_radius,
+        fill=JUTE_HIGHLIGHT,
+        outline=JUTE_SHADOW,
+        width=int(size * 0.01),
+    )
+
+    # Pocket stitches
+    stitch_count = 8
+    stitch_spacing = (bag_width * 0.76) / (stitch_count - 1)
+    start_x = bag_x + bag_width * 0.12
+    for i in range(stitch_count):
+        x = start_x + i * stitch_spacing
+        final_draw.line(
+            [(x, pocket_y - size * 0.01), (x, pocket_y + pocket_height + size * 0.01)],
+            fill=STITCH_COLOR,
+            width=int(size * 0.006),
+        )
+
+    # Vegetables (drawn before bag lip)
+    def draw_leaf_bundle(cx, cy, scale=1.0):
+        leaf_width = size * 0.07 * scale
+        leaf_height = size * 0.16 * scale
+        for offset in (-leaf_width * 0.8, 0, leaf_width * 0.8):
+            final_draw.ellipse(
+                [
+                    (cx + offset - leaf_width / 2, cy - leaf_height),
+                    (cx + offset + leaf_width / 2, cy),
+                ],
+                fill=LEAF_GREEN if offset != 0 else DEEP_LEAF,
+                outline=None,
+            )
+
+    def draw_carrot(cx, cy, scale=1.0):
+        carrot_height = size * 0.22 * scale
+        carrot_width = size * 0.07 * scale
+        body = [
+            (cx - carrot_width / 2, cy),
+            (cx + carrot_width / 2, cy),
+            (cx, cy + carrot_height),
+        ]
+        final_draw.polygon(body, fill=CARROT_ORANGE, outline=CARROT_SHADOW)
+        final_draw.line(
+            [(cx, cy), (cx, cy - carrot_height * 0.35)],
+            fill=DEEP_LEAF,
+            width=int(size * 0.01),
+        )
+        draw_leaf_bundle(cx, cy - carrot_height * 0.3, scale=0.7)
+
+    def draw_tomato(cx, cy, scale=1.0):
+        radius = size * 0.07 * scale
+        final_draw.ellipse(
+            [(cx - radius, cy - radius), (cx + radius, cy + radius)],
+            fill=TOMATO_RED,
+            outline=TOMATO_SHADOW,
+        )
+        # Tomato leaves
+        leaf_radius = radius * 0.6
+        for angle in range(0, 360, 60):
+            offset_x = leaf_radius * 0.7
+            offset_y = leaf_radius * 0.4
+            final_draw.ellipse(
+                [
+                    (cx - offset_x + angle * 0.1, cy - radius - offset_y),
+                    (cx + offset_x - angle * 0.1, cy - radius + offset_y),
+                ],
+                fill=FORAGE_GREEN,
+                outline=None,
+            )
+
+    def draw_onion(cx, cy, scale=1.0):
+        bulb_width = size * 0.1 * scale
+        bulb_height = size * 0.16 * scale
+        final_draw.ellipse(
+            [
+                (cx - bulb_width / 2, cy - bulb_height),
+                (cx + bulb_width / 2, cy + bulb_height * 0.1),
+            ],
+            fill=ONION_PURPLE,
+            outline=(120, 59, 140),
+        )
+        # Shoots
+        for i in range(3):
+            offset = (i - 1) * bulb_width * 0.15
+            final_draw.line(
+                [
+                    (cx + offset, cy - bulb_height),
+                    (cx + offset * 1.2, cy - bulb_height - size * (0.12 - i * 0.01)),
+                ],
+                fill=FORAGE_GREEN,
+                width=int(size * 0.01),
+            )
+
+    veggie_base_y = bag_y - size * 0.02
+    draw_carrot(center_x - bag_width * 0.22, veggie_base_y, scale=1.05)
+    draw_leaf_bundle(center_x + bag_width * 0.1, veggie_base_y - size * 0.02, scale=1.1)
+    draw_tomato(center_x + bag_width * 0.02, veggie_base_y + size * 0.04, scale=1.0)
+    draw_onion(center_x - bag_width * 0.02, veggie_base_y - size * 0.05, scale=0.9)
+
+    # Bag lip
+    lip_height = size * 0.06
+    final_draw.rectangle(
+        [
+            (top_left[0], top_left[1] - lip_height / 2),
+            (top_right[0], top_right[1] + lip_height / 2),
+        ],
+        fill=JUTE_HIGHLIGHT,
+        outline=JUTE_SHADOW,
+    )
+
+    # Rope tie
+    rope_y = top_left[1] + lip_height * 0.2
+    final_draw.line(
+        [
+            (top_left[0] + size * 0.08, rope_y),
+            (top_right[0] - size * 0.08, rope_y),
+        ],
+        fill=JUTE_SHADOW,
+        width=int(size * 0.018),
+    )
+    # Knot
+    final_draw.ellipse(
+        [
+            (center_x - size * 0.035, rope_y - size * 0.02),
+            (center_x + size * 0.035, rope_y + size * 0.02),
+        ],
+        fill=JUTE_SHADOW,
+        outline=None,
+    )
+
+    # Overlay highlights
+    highlight = Image.new("RGBA", (size, size), (255, 255, 255, 0))
+    highlight_draw = ImageDraw.Draw(highlight)
+    highlight_draw.pieslice(
+        [
+            (-size * 0.2, -size * 0.2),
+            (size * 1.0, size * 0.8),
+        ],
+        start=0,
+        end=90,
+        fill=(255, 255, 255, 30),
+    )
+    combined = Image.alpha_composite(img, foreground)
+    combined = Image.alpha_composite(combined, highlight)
+    return combined
 
 if __name__ == '__main__':
     icon = create_app_icon()

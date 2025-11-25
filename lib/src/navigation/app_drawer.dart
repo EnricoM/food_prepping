@@ -36,7 +36,7 @@ class AppDrawer extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                'Recipe Parser',
+                'Recipe Keeper',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -184,7 +184,7 @@ class _DrawerHeader extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Recipe Parser',
+            'Recipe Keeper',
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,

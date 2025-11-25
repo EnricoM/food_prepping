@@ -88,7 +88,7 @@ git push -u origin main
    - **Folder:** `/ (root)`
    - Click **"Save"**
 
-4. **Wait 1-2 minutes** for GitHub Pages to deploy
+4. **Wait 1-2 minutes** for GitHub Pages to deploy 
 
 5. **Your site URL will be:**
    ```
@@ -115,27 +115,101 @@ git push -u origin main
 
 ## Step 6: Update AdMob
 
+### ⚠️ Important: App-ads.txt Section May Not Be Visible Yet
+
+**If you can't find the app-ads.txt section**, it's likely because:
+- Your app isn't published to Play Store yet
+- The app isn't linked to a store in AdMob
+- AdMob discovers app-ads.txt automatically from your Play Store listing
+
+**Don't worry!** You can still set it up now, and AdMob will verify it once your app is published.
+
+### Option 1: Try to Find It (If Available)
+
 1. **Go to AdMob Console:**
    - Visit [apps.admob.com](https://apps.admob.com)
    - Sign in
 
 2. **Navigate to your app:**
-   - Click **"Apps"** → Select **"Recipe Parser"**
+   - In the **left sidebar**, click **"Apps"**
+   - Click on **"Recipe Parser"** (your app name)
 
-3. **Update app settings:**
-   - Click **"App settings"** (or the settings icon)
-   - Scroll to **"App-ads.txt"** section
-   - **Website URL:** Enter your GitHub Pages URL:
-     ```
-     https://YOUR_USERNAME.github.io/recipe-parser-app-ads
-     ```
-     (Don't include `/app-ads.txt` - just the base URL)
+3. **Look for these sections:**
+   - **"App settings"** or **"Settings"** tab
+   - **"App stores"** section
+   - **"App information"** section
+   - Scroll through all tabs/sections
+
+4. **If you find "App-ads.txt" or "Website URL" field:**
+   - Paste: `https://YOUR_USERNAME.github.io/recipe-parser-app-ads`
    - Click **"Save"**
 
-4. **Wait for verification:**
-   - AdMob checks every 24-48 hours
-   - Status will change from "Unreviewed" to "Verified"
-   - You'll get an email when it's verified
+### Option 2: Add Website to Play Store Listing (Recommended)
+
+**This is the main way AdMob discovers app-ads.txt:**
+
+1. **Go to Google Play Console:**
+   - Visit [play.google.com/console](https://play.google.com/console)
+   - Select your app: **Recipe Parser**
+
+2. **Add Developer Website:**
+   - Go to **"Store presence"** → **"Store listing"**
+   - Find **"Website"** or **"Developer website"** field
+   - Enter: `https://YOUR_USERNAME.github.io/recipe-parser-app-ads`
+   - Click **"Save"**
+
+3. **AdMob will automatically discover it:**
+   - Once your app is published, AdMob will check this website
+   - It will look for `app-ads.txt` at the root
+   - Verification happens automatically (24-48 hours)
+
+### Option 3: Link App to Play Store in AdMob
+
+If your app is published:
+
+1. **In AdMob:**
+   - Apps → Recipe Parser
+   - Look for **"App stores"** section
+   - Click **"Add store"** or **"Link to Play Store"**
+   - Search for your app and link it
+
+2. **After linking:**
+   - The app-ads.txt section might appear
+   - Or AdMob will discover it from your Play Store listing
+
+### Option 4: Wait Until App is Published
+
+**If you can't find the section now:**
+- ✅ Set up GitHub Pages (you're doing this now)
+- ✅ Add website to Play Store listing (when you publish)
+- ✅ AdMob will verify automatically after publishing
+
+**The warning you saw is just a notification** - it won't block your ads from working.
+
+### What to Do Right Now:
+
+**Since you can't find the section in AdMob:**
+
+1. ✅ **Complete GitHub Pages setup** (Steps 1-5 above)
+2. ✅ **Verify the file is accessible** at: `https://YOUR_USERNAME.github.io/recipe-parser-app-ads/app-ads.txt`
+3. ⏳ **Wait until you publish to Play Store**
+4. 📝 **Add website to Play Store listing** (Store presence → Store listing → Website)
+5. ✅ **AdMob will discover it automatically** after publishing
+
+**The warning is just informational** - your ads will still work!
+
+### What the URL Should Look Like:
+
+**Correct:**
+```
+https://enrico.github.io/recipe-parser-app-ads
+```
+
+**Wrong:**
+```
+https://enrico.github.io/recipe-parser-app-ads/app-ads.txt  ❌
+enrico.github.io/recipe-parser-app-ads  ❌ (missing https://)
+```
 
 ---
 

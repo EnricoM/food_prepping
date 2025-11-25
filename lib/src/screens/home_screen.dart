@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('Recipe Parser')),
+      appBar: const BackAwareAppBar(title: Text('Recipe Keeper')),
       drawer: const AppDrawer(currentRoute: routeName),
       body: SafeArea(
         child: SingleChildScrollView(

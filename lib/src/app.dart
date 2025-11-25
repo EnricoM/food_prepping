@@ -37,7 +37,7 @@ class RecipeParserApp extends StatelessWidget {
     );
 
     return MaterialApp(
-      title: 'Recipe Parser',
+      title: 'Recipe Keeper',
       theme: ThemeData(
         colorScheme: colorScheme,
         useMaterial3: true,
