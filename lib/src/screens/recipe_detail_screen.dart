@@ -5,6 +5,7 @@ import 'package:shared_ui/shared_ui.dart';
 
 import '../services/measurement_preferences.dart';
 import '../utils/ingredient_converter.dart';
+import '../utils/countries.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'settings_screen.dart';
 import '../widgets/ad_banner.dart';
@@ -1063,33 +1064,8 @@ class _FilterEditDialogState extends State<_FilterEditDialog> {
     'South America',
   ];
 
-  static const List<String> _countries = [
-    'United States',
-    'United Kingdom',
-    'Canada',
-    'Australia',
-    'France',
-    'Germany',
-    'Italy',
-    'Spain',
-    'Netherlands',
-    'Belgium',
-    'Portugal',
-    'Greece',
-    'Turkey',
-    'India',
-    'China',
-    'Japan',
-    'South Korea',
-    'Thailand',
-    'Vietnam',
-    'Mexico',
-    'Brazil',
-    'Argentina',
-    'South Africa',
-    'Morocco',
-    'Ethiopia',
-  ];
+  // Use comprehensive list of all countries for editing filters
+  List<String> get _countries => List<String>.from(allCountries)..sort();
 
   static const List<String> _diets = [
     'Vegetarian',
