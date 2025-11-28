@@ -22,7 +22,6 @@ import 'screens/barcode_scan_screen.dart';
 import 'screens/receipt_scan_screen.dart';
 import 'screens/batch_cooking_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/upgrade_screen.dart';
 
 class RecipeParserApp extends StatelessWidget {
   const RecipeParserApp({super.key});
@@ -130,7 +129,7 @@ class RecipeParserApp extends StatelessWidget {
       ),
       initialRoute: _initialRoute,
       routes: {
-        HomeScreen.routeName: (context) => HomeScreen(
+        HomeScreen.routeName: (context) => _HomeScreenWrapper(
           openAddRecipe: () => _pushRoute(context, AddRecipeScreen.routeName),
           openManualRecipe: () =>
               _pushRoute(context, ManualRecipeScreen.routeName),
@@ -194,7 +193,6 @@ class RecipeParserApp extends StatelessWidget {
           drawer: AppDrawer(currentRoute: VisitedDomainsScreen.routeName),
         ),
         SettingsScreen.routeName: (context) => const SettingsScreen(),
-        UpgradeScreen.routeName: (context) => const UpgradeScreen(),
         InventoryRecipeSuggestionsScreen.routeName: (context) => const InventoryRecipeSuggestionsScreen(
           drawer: AppDrawer(currentRoute: InventoryRecipeSuggestionsScreen.routeName),
         ),
@@ -244,6 +242,34 @@ class RecipeParserApp extends StatelessWidget {
       return;
     }
     Navigator.of(context).pushNamed(route);
+  }
+}
+
+class _HomeScreenWrapper extends StatelessWidget {
+  const _HomeScreenWrapper({
+    required this.openAddRecipe,
+    required this.openManualRecipe,
+    required this.openStoredRecipes,
+    required this.openShoppingList,
+    required this.openInventory,
+  });
+
+  final VoidCallback openAddRecipe;
+  final VoidCallback openManualRecipe;
+  final VoidCallback openStoredRecipes;
+  final VoidCallback openShoppingList;
+  final VoidCallback openInventory;
+
+  @override
+  Widget build(BuildContext context) {
+    // Tour disabled - removed auto-launch to avoid bad first impression
+    return HomeScreen(
+      openAddRecipe: openAddRecipe,
+      openManualRecipe: openManualRecipe,
+      openStoredRecipes: openStoredRecipes,
+      openShoppingList: openShoppingList,
+      openInventory: openInventory,
+    );
   }
 }
 

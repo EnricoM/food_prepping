@@ -150,11 +150,6 @@ class _DrawerEntry {
       label: 'Settings',
       routeName: '/settings',
     ),
-    const _DrawerEntry(
-      icon: Icons.workspace_premium_outlined,
-      label: 'Upgrade to Premium',
-      routeName: '/upgrade',
-    ),
   ];
 }
 
