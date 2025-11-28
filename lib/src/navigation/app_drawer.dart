@@ -36,7 +36,7 @@ class AppDrawer extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                'Recipe Parser',
+                'Recipe Keeper',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -150,11 +150,6 @@ class _DrawerEntry {
       label: 'Settings',
       routeName: '/settings',
     ),
-    const _DrawerEntry(
-      icon: Icons.workspace_premium_outlined,
-      label: 'Upgrade to Premium',
-      routeName: '/upgrade',
-    ),
   ];
 }
 
@@ -184,7 +179,7 @@ class _DrawerHeader extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Recipe Parser',
+            'Recipe Keeper',
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,

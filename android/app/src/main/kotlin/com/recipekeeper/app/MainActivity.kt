@@ -1,5 +1,6 @@
-package com.example.recipe_parser
+package com.recipekeeper.app
 
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity()
+

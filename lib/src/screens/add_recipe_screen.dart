@@ -62,7 +62,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('Add recipe from URL')),
+      appBar: BackAwareAppBar(
+        title: const Text('Add recipe from URL'),
+      ),
       drawer:
           widget.drawer ?? const AppDrawer(currentRoute: AddRecipeScreen.routeName),
       body: SafeArea(

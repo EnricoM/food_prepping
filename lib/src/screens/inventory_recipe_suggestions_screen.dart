@@ -77,6 +77,42 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
             return StreamBuilder<List<RecipeEntity>>(
               stream: AppRepositories.instance.recipes.watchAll(),
               builder: (context, recipeSnapshot) {
+                if (recipeSnapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: inset,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Error loading recipes',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            recipeSnapshot.error.toString(),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.7),
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                
                 if (!recipeSnapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }

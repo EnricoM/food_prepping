@@ -14,7 +14,7 @@ void main() {
     await tester.pumpWidget(const RecipeParserApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Recipe Parser'), findsWidgets);
+    expect(find.text('Recipe Keeper'), findsWidgets);
     expect(find.text('Get started'), findsOneWidget);
     expect(find.text('Add a recipe from URL'), findsOneWidget);
   });
