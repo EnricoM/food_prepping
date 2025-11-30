@@ -13,6 +13,7 @@ import 'edit_recipe_screen.dart' as edit_recipe_screen;
 import '../../../../src/screens/settings_screen.dart';
 import '../../domain/models/recipe_model.dart';
 import '../utils/recipe_navigation.dart';
+import '../widgets/network_image_with_fallback.dart';
 
 /// Arguments for RecipeDetailScreen
 class RecipeDetailArgs {
@@ -237,14 +238,12 @@ class _OverviewTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-            ClipRRect(
+            NetworkImageWithFallback(
+              imageUrl: recipe.imageUrl!,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
               borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                recipe.imageUrl!,
-                height: 220,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
             ),
           const SizedBox(height: 16),
           Text(

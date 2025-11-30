@@ -9,6 +9,7 @@ import 'package:shared_ui/shared_ui.dart';
 
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
+import '../../features/recipes/presentation/widgets/network_image_with_fallback.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({
@@ -247,20 +248,18 @@ class _RecipePreviewCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-                  ClipRRect(
+                  NetworkImageWithFallback(
+                    imageUrl: recipe.imageUrl!,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      recipe.imageUrl!,
+                    fallback: const SizedBox(
                       width: 120,
                       height: 120,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox(
-                        width: 120,
-                        height: 120,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(color: Colors.black12),
-                          child: Icon(Icons.image_not_supported),
-                        ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: Colors.black12),
+                        child: Icon(Icons.image_not_supported),
                       ),
                     ),
                   )

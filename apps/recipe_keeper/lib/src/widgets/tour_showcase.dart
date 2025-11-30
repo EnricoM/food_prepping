@@ -31,7 +31,7 @@ class TourShowcase extends StatelessWidget {
       overlayOpacity: 0.75,
       tooltipBackgroundColor: Theme.of(context).colorScheme.surface,
       textColor: Theme.of(context).colorScheme.onSurface,
-      descTextColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+      // descTextColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
       titleTextStyle: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,

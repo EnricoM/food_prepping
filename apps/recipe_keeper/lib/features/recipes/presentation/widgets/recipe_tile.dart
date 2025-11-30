@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/models/recipe_model.dart';
+import 'network_image_with_fallback.dart';
 
 /// Widget for displaying a recipe in a list
 class RecipeTile extends StatelessWidget {
@@ -179,42 +180,13 @@ class _RecipeThumbnail extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
+      child: NetworkImageWithFallback(
+        imageUrl: imageUrl!,
+        width: 96,
+        height: 96,
+        fit: BoxFit.cover,
         borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          imageUrl!,
-          width: 96,
-          height: 96,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _placeholder(),
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.grey.shade200,
-                    Colors.grey.shade100,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                      : null,
-                  strokeWidth: 2,
-                ),
-              ),
-            );
-          },
-        ),
+        fallback: _placeholder(),
       ),
     );
   }

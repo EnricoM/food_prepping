@@ -10,6 +10,7 @@ import '../widgets/back_aware_app_bar.dart';
 import 'settings_screen.dart';
 import '../widgets/ad_banner.dart';
 import 'edit_recipe_screen.dart';
+import '../../features/recipes/presentation/widgets/network_image_with_fallback.dart';
 
 class RecipeDetailArgs {
   RecipeDetailArgs({required this.recipe, this.entity});
@@ -208,14 +209,12 @@ class _OverviewTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-            ClipRRect(
+            NetworkImageWithFallback(
+              imageUrl: recipe.imageUrl!,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
               borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                recipe.imageUrl!,
-                height: 220,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
             ),
           const SizedBox(height: 16),
           Text(

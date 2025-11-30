@@ -12,6 +12,7 @@ import '../../../../src/navigation/app_drawer.dart';
 import '../../../../src/widgets/back_aware_app_bar.dart';
 import '../../domain/models/recipe_model.dart';
 import '../utils/recipe_navigation.dart';
+import '../widgets/network_image_with_fallback.dart';
 
 /// Screen for adding a recipe by parsing from a URL
 /// 
@@ -288,20 +289,18 @@ class _RecipePreviewCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-                  ClipRRect(
+                  NetworkImageWithFallback(
+                    imageUrl: recipe.imageUrl!,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      recipe.imageUrl!,
+                    fallback: const SizedBox(
                       width: 120,
                       height: 120,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox(
-                        width: 120,
-                        height: 120,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(color: Colors.black12),
-                          child: Icon(Icons.image_not_supported),
-                        ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: Colors.black12),
+                        child: Icon(Icons.image_not_supported),
                       ),
                     ),
                   )

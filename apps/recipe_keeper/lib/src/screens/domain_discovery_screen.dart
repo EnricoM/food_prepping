@@ -38,8 +38,11 @@ class _DiscoveredUrl {
 
 class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
   final _domainController = TextEditingController();
-  final _discovery = DomainRecipeDiscovery();
   final _parser = RecipeParser();
+  final _discovery = DomainRecipeDiscovery(
+    // Don't validate during discovery - it's too slow.
+    // Validation happens in _filterDiscoveredUrls() after discovery.
+  );
   final List<_DiscoveredUrl> _results = [];
   final Set<Uri> _selectedUrls = {};
   Future<void>? _filterTask;
@@ -143,7 +146,11 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.language),
-                label: Text(_isLoading ? 'Scanning…' : 'Scan domain'),
+                label: Text(
+                  _isLoading
+                      ? 'Scanning domain… (this may take a minute)'
+                      : 'Scan domain',
+                ),
               ),
               const SizedBox(height: 8),
               const AdBanner(),
@@ -326,7 +333,18 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
       _selectedUrls.clear();
     });
     try {
-      final urls = await _discovery.discoverRecipes(domain, maxUrls: 750);
+      // Add timeout to discovery process
+      final urls = await _discovery
+          .discoverRecipes(domain, maxUrls: 750)
+          .timeout(
+            const Duration(minutes: 2),
+            onTimeout: () {
+              throw TimeoutException(
+                'Domain discovery timed out after 2 minutes. '
+                'The site may be large or slow to respond.',
+              );
+            },
+          );
       if (!mounted) return;
       
       // Normalize domain for lookup (extract host from domain input)
@@ -393,11 +411,17 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
       }
       
       _startFiltering();
+    } on TimeoutException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _error = error.message ?? 'Domain discovery timed out.';
+      });
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _error = 'Failed to scan domain: $error';
+        _error = 'Failed to scan domain: ${error.toString()}';
       });
     }
   }

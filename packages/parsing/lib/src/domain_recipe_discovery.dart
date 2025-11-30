@@ -6,26 +6,22 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
+import 'http_utils.dart';
+import 'recipe_parser.dart';
+
 class DomainRecipeDiscovery {
-  DomainRecipeDiscovery({http.Client? client})
-      : _client = client ?? http.Client();
+  DomainRecipeDiscovery({
+    http.Client? client,
+    RecipeParser? recipeParser,
+    bool validateRecipes = false,
+  })  : _client = client ?? http.Client(),
+        _recipeParser = recipeParser,
+        _validateRecipes = validateRecipes;
 
   final http.Client _client;
+  final RecipeParser? _recipeParser;
+  final bool _validateRecipes;
   final Map<String, String> _cookieJar = {};
-  static const _headerCandidates = [
-    {
-      'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-              '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      'Accept':
-          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-    },
-    {
-      'User-Agent': 'curl/8.5.0',
-      'Accept': '*/*',
-    },
-  ];
 
   static final Set<String> _positivePathIndicators = {
     'recipe',
@@ -132,7 +128,9 @@ class DomainRecipeDiscovery {
     String domain, {
     int maxSitemaps = 10,
     int maxUrls = 750,
+    bool? validateRecipes,
   }) async {
+    final shouldValidate = validateRecipes ?? _validateRecipes;
     final normalized = _normalizeDomain(domain);
     final baseHost = normalized.host;
     final canonicalHost = _canonicalHost(baseHost);
@@ -189,6 +187,15 @@ class DomainRecipeDiscovery {
           if (!seenUrls.add(key)) {
             continue;
           }
+          
+          // Optionally validate that the page actually contains a recipe
+          if (shouldValidate && _recipeParser != null) {
+            final hasRecipe = await _validateRecipeUrl(normalizedUrl);
+            if (!hasRecipe) {
+              continue;
+            }
+          }
+          
           final lastModText =
               element.findElements('lastmod').firstOrNull?.innerText;
           discoveredEntries.add(
@@ -204,13 +211,15 @@ class DomainRecipeDiscovery {
       }
     }
 
-    if (discoveredEntries.isEmpty) {
+    // Always try crawling if we haven't found enough URLs, or if no sitemaps were found
+    if (discoveredEntries.isEmpty || discoveredEntries.length < maxUrls) {
       final crawledEntries = await _crawlSiteForRecipes(
         normalizedBase: normalized,
         canonicalHost: canonicalHost,
         baseScheme: baseScheme,
         seenUrls: seenUrls,
-        maxUrls: maxUrls,
+        maxUrls: maxUrls - discoveredEntries.length,
+        validateRecipes: shouldValidate,
       );
       discoveredEntries.addAll(crawledEntries);
     }
@@ -268,7 +277,8 @@ class DomainRecipeDiscovery {
     required String baseScheme,
     required Set<String> seenUrls,
     required int maxUrls,
-    int maxPages = 150,
+    int maxPages = 200, // Increased from 150 to crawl more pages
+    bool validateRecipes = false,
   }) async {
     final queue = Queue<Uri>()..add(normalizedBase);
     final visitedPages = <String>{};
@@ -304,6 +314,14 @@ class DomainRecipeDiscovery {
 
         if (isLikelyRecipeUrl(normalizedUrl)) {
           if (seenUrls.add(urlKey)) {
+            // Optionally validate that the page actually contains a recipe
+            if (validateRecipes && _recipeParser != null) {
+              final hasRecipe = await _validateRecipeUrl(normalizedUrl);
+              if (!hasRecipe) {
+                continue;
+              }
+            }
+            
             discovered.add(
               _SitemapUrlEntry(
                 url: normalizedUrl,
@@ -314,8 +332,17 @@ class DomainRecipeDiscovery {
               break;
             }
           }
-        } else if (seenPages.length < maxPages && seenPages.add(urlKey)) {
-          queue.add(normalizedUrl);
+        } else {
+          // Prioritize URLs that look like recipes for crawling
+          if (isLikelyRecipeUrl(normalizedUrl)) {
+            // Add recipe-like URLs to the front of the queue
+            if (seenPages.add(urlKey)) {
+              queue.addFirst(normalizedUrl);
+            }
+          } else if (seenPages.length < maxPages && seenPages.add(urlKey)) {
+            // Add other URLs to the back of the queue
+            queue.add(normalizedUrl);
+          }
         }
       }
     }
@@ -334,7 +361,7 @@ class DomainRecipeDiscovery {
 
   Future<http.Response?> _sendRequest(Uri uri) async {
     http.Response? lastResponse;
-    for (final candidate in _headerCandidates) {
+    for (final candidate in HttpUtils.discoveryHeaderCandidates) {
       final response = await _sendWithHeaders(uri, candidate);
       if (response == null) {
         continue;
@@ -360,9 +387,9 @@ class DomainRecipeDiscovery {
       return null;
     }
 
-    if (_needsCookieRetry(response.statusCode)) {
+    if (HttpUtils.shouldRetryWithCookies(response.statusCode)) {
       final responseCookies =
-          _cookieHeaderFromSetCookie(response.headers['set-cookie']);
+          HttpUtils.cookieHeaderFromSetCookie(response.headers['set-cookie']);
       if (responseCookies != null) {
         _cookieJar[uri.host] = responseCookies;
         try {
@@ -372,13 +399,18 @@ class DomainRecipeDiscovery {
         } catch (_) {
           return null;
         }
-        if (!_needsCookieRetry(response.statusCode)) {
+        if (!HttpUtils.shouldRetryWithCookies(response.statusCode)) {
           _updateCookieJar(uri, response.headers['set-cookie']);
           return response;
         }
       }
 
-      final hostCookies = await _fetchHostCookies(uri, baseHeaders);
+      final hostCookies = await HttpUtils.fetchHostCookies(
+        _client,
+        uri,
+        baseHeaders,
+        const Duration(seconds: 15),
+      );
       if (hostCookies != null) {
         _cookieJar[uri.host] = hostCookies;
         try {
@@ -395,32 +427,26 @@ class DomainRecipeDiscovery {
     return response;
   }
 
-  Future<String?> _fetchHostCookies(
-    Uri uri,
-    Map<String, String> baseHeaders,
-  ) async {
-    final root = uri.replace(path: '/', query: null, fragment: null);
-    try {
-      final headers = Map<String, String>.from(baseHeaders)
-        ..remove('Accept-Encoding');
-      final response = await _client
-          .get(root, headers: headers)
-          .timeout(const Duration(seconds: 15));
-      return _cookieHeaderFromSetCookie(response.headers['set-cookie']);
-    } catch (_) {
-      return null;
-    }
-  }
-
   void _updateCookieJar(Uri uri, String? setCookie) {
-    final cookie = _cookieHeaderFromSetCookie(setCookie);
+    final cookie = HttpUtils.cookieHeaderFromSetCookie(setCookie);
     if (cookie != null) {
       _cookieJar[uri.host] = cookie;
     }
   }
-
-  bool _needsCookieRetry(int statusCode) =>
-      statusCode == 401 || statusCode == 403 || statusCode == 503;
+  
+  /// Validates that a URL actually contains a recipe by attempting to parse it.
+  Future<bool> _validateRecipeUrl(Uri uri) async {
+    final parser = _recipeParser;
+    if (parser == null) {
+      return true; // No parser available, skip validation
+    }
+    try {
+      await parser.parseUrl(uri.toString());
+      return true;
+    } catch (_) {
+      return false; // Failed to parse recipe
+    }
+  }
 
   bool _isSameHost(Uri uri, String canonicalHost) {
     if (canonicalHost.isEmpty) {
@@ -587,18 +613,6 @@ class DomainRecipeDiscovery {
     }
   }
 
-  String? _cookieHeaderFromSetCookie(String? setCookie) {
-    if (setCookie == null || setCookie.isEmpty) {
-      return null;
-    }
-    final matches = RegExp(r'([^=,\s]+=[^;]+)').allMatches(setCookie);
-    final values =
-        matches.map((match) => match.group(0)).whereType<String>().toList();
-    if (values.isEmpty) {
-      return null;
-    }
-    return values.join('; ');
-  }
 }
 
 class _SitemapUrlEntry {
