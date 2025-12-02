@@ -256,7 +256,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     };
 
     final tokens = <String>{};
-    for (final ingredient in recipe.ingredients) {
+    for (final ingredient in recipe.ingredientStrings) {
       final words = ingredient
           .toLowerCase()
           .replaceAll(RegExp(r'[^a-z\s]'), ' ')
@@ -737,7 +737,7 @@ class _MealDayEditorState extends State<_MealDayEditor> {
 
     for (final recipeList in widget.selectedRecipes.values) {
       for (final entity in recipeList) {
-        for (final ingredient in entity.ingredients) {
+        for (final ingredient in entity.ingredientStrings) {
           final item = matchFor(ingredient);
           if (item != null) {
             reservationCounts[item] = (reservationCounts[item] ?? 0) + 1;
@@ -985,7 +985,7 @@ class _MealSlotCardState extends State<_MealSlotCard> {
       if ((recipe.description ?? '').toLowerCase().contains(lowerQuery)) {
         return true;
       }
-      if (recipe.ingredients
+      if (recipe.ingredientStrings
           .any((ingredient) => ingredient.toLowerCase().contains(lowerQuery))) {
         return true;
       }
@@ -1194,7 +1194,7 @@ String _normalize(String value) {
 }
 
 String _ingredientsPreviewText(Recipe recipe, {int maxCount = 3}) {
-  final ingredients = recipe.ingredients;
+  final ingredients = recipe.ingredientStrings;
   if (ingredients.isEmpty) {
     return 'No ingredients listed';
   }

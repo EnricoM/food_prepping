@@ -134,20 +134,16 @@ class RecipeRepositoryImpl implements RecipeRepository {
     String? diet,
     String? course,
   }) async {
-    // Get current recipe
-    final current = getById(id);
-    if (current == null) return;
-
-    // Update with new filter values
-    final updated = current.copyWith(
+    // Call the store's updateFilters directly to avoid going through updateRecipe
+    // which would preserve old filter values
+    final store = RecipeStore.instance;
+    await store.updateFilters(
+      url: id,
       continent: continent,
       country: country,
       diet: diet,
       course: course,
     );
-
-    // Save the updated recipe
-    await update(updated);
   }
 
   @override

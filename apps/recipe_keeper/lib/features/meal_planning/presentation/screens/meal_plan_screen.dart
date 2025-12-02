@@ -279,7 +279,7 @@ class _MealPlanScreenState extends ConsumerState<MealPlanScreen> {
     };
 
     final tokens = <String>{};
-    for (final ingredient in recipe.ingredients) {
+    for (final ingredient in recipe.ingredientStrings) {
       final words = ingredient
           .toLowerCase()
           .replaceAll(RegExp(r'[^a-z\s]'), ' ')

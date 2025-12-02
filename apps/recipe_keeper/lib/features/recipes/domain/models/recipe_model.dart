@@ -1,3 +1,5 @@
+import 'package:core/core.dart';
+
 /// Domain model for a recipe
 /// 
 /// This is the core recipe model used throughout the recipes feature.
@@ -29,8 +31,12 @@ class RecipeModel {
 
   final String id; // URL or unique identifier
   final String title;
-  final List<String> ingredients;
+  final List<Ingredient> ingredients;
   final List<String> instructions;
+
+  /// Get ingredients as strings (for backward compatibility)
+  List<String> get ingredientStrings =>
+      ingredients.map((ing) => ing.displayString).toList(growable: false);
   final String? description;
   final String? imageUrl;
   final String? author;
@@ -52,7 +58,7 @@ class RecipeModel {
   RecipeModel copyWith({
     String? id,
     String? title,
-    List<String>? ingredients,
+    List<Ingredient>? ingredients,
     List<String>? instructions,
     String? description,
     String? imageUrl,

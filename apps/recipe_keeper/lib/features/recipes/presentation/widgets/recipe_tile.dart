@@ -85,7 +85,7 @@ class RecipeTile extends StatelessWidget {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              _ingredientsPreview(recipe.ingredients),
+                              _ingredientsPreview(recipe.ingredientStrings),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.bodySmall?.copyWith(

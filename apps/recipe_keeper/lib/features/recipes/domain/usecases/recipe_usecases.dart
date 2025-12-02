@@ -63,7 +63,7 @@ class FilterRecipesUseCase {
         final matchesQuery = 
             recipe.title.toLowerCase().contains(searchText) ||
             recipe.description?.toLowerCase().contains(searchText) == true ||
-            recipe.ingredients.any((i) => i.toLowerCase().contains(searchText)) ||
+            recipe.ingredientStrings.any((i) => i.toLowerCase().contains(searchText)) ||
             recipe.instructions.any((i) => i.toLowerCase().contains(searchText));
         if (!matchesQuery) return false;
       }

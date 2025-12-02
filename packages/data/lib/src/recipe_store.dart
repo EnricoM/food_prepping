@@ -139,6 +139,10 @@ class RecipeStore {
         country: country,
         diet: diet,
         course: course,
+        updateContinent: true,
+        updateCountry: true,
+        updateDiet: true,
+        updateCourse: true,
       ),
     );
   }

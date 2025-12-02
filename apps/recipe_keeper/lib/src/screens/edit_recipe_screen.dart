@@ -423,7 +423,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
-      ingredients: _ingredients,
+      ingredients: IngredientParser.parseList(_ingredients),
       instructions: instructions,
       prepTime: _durationFromMinutes(_prepMinutesController.text.trim()),
       cookTime: _durationFromMinutes(_cookMinutesController.text.trim()),

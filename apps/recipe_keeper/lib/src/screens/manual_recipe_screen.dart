@@ -380,7 +380,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
-        ingredients: _ingredients,
+        ingredientStrings: _ingredients,
         instructions: instructions,
         prepTime: _durationFromMinutes(_prepMinutesController.text.trim()),
         cookTime: _durationFromMinutes(_cookMinutesController.text.trim()),

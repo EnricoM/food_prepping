@@ -22,6 +22,20 @@ class RecipeDetailArgs {
   final RecipeModel recipe;
 }
 
+/// Provider for watching a single recipe by ID
+/// This is more efficient than watching all recipes
+/// Uses StreamProvider.family to cache providers per recipe ID, avoiding recreation on every build
+final _recipeProvider = StreamProvider.family<RecipeModel, String>((ref, recipeId) {
+  final repository = ref.watch(recipeRepositoryProvider);
+  return repository.watchAll().map((recipes) {
+    try {
+      return recipes.firstWhere((r) => r.id == recipeId);
+    } catch (_) {
+      return repository.getById(recipeId) ?? recipes.first;
+    }
+  });
+});
+
 /// Screen displaying recipe details with tabs
 /// 
 /// Uses Riverpod for state management and the new RecipeController.
@@ -39,8 +53,15 @@ class RecipeDetailScreen extends ConsumerWidget {
     final controller = ref.watch(recipeControllerProvider.notifier);
     final repository = ref.watch(recipeRepositoryProvider);
 
-    // Get the full recipe model (with updated favorite status)
-    final currentRecipe = repository.getById(recipeModel.id) ?? recipeModel;
+    // Efficiently watch for recipe updates by filtering the stream to only this recipe
+    // Using a cached approach to avoid recreating the provider on every build
+    // This reduces unnecessary processing when other recipes change
+    final recipeAsync = ref.watch(_recipeProvider(recipeModel.id));
+    final currentRecipe = recipeAsync.when(
+      data: (r) => r,
+      loading: () => repository.getById(recipeModel.id) ?? recipeModel,
+      error: (_, __) => repository.getById(recipeModel.id) ?? recipeModel,
+    );
 
     final tabs = const [
       Tab(icon: Icon(Icons.dashboard_outlined), text: 'Overview'),
@@ -406,7 +427,7 @@ class _IngredientsTabState extends State<_IngredientsTab> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final originalServings = _extractServings(widget.recipe);
-    final displayIngredients = _scaledRecipe?.scaledIngredients ?? widget.recipe.ingredients;
+    final displayIngredients = _scaledRecipe?.scaledIngredients.map((ing) => ing.displayString).toList() ?? widget.recipe.ingredientStrings;
 
     return Column(
       children: [
@@ -1137,10 +1158,13 @@ class _FilterEditDialogState extends ConsumerState<_FilterEditDialog> {
   @override
   void initState() {
     super.initState();
-    _selectedContinent = widget.recipe.continent;
-    _selectedCountry = widget.recipe.country;
-    _selectedDiet = widget.recipe.diet;
-    _selectedCourse = widget.recipe.course;
+    // Fetch the latest recipe from the repository to ensure we have the most up-to-date filter values
+    final repository = ref.read(recipeRepositoryProvider);
+    final latestRecipe = repository.getById(widget.recipe.id) ?? widget.recipe;
+    _selectedContinent = latestRecipe.continent;
+    _selectedCountry = latestRecipe.country;
+    _selectedDiet = latestRecipe.diet;
+    _selectedCourse = latestRecipe.course;
   }
 
   @override
@@ -1189,21 +1213,35 @@ class _FilterEditDialogState extends ConsumerState<_FilterEditDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: () async {
-            // Update the recipe model with new filters
-            final updatedRecipe = widget.recipe.copyWith(
+          onPressed: () {
+            // Close dialog immediately for better UX (optimistic update)
+            Navigator.of(context).pop();
+            
+            // Update filters asynchronously without blocking UI
+            repository.updateFilters(
+              id: widget.recipe.id,
               continent: _selectedContinent,
               country: _selectedCountry,
               diet: _selectedDiet,
               course: _selectedCourse,
-            );
-            await repository.update(updatedRecipe);
-            if (context.mounted) {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Filters updated')),
-              );
-            }
+            ).then((_) {
+              // Show success message after save completes
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Filters updated')),
+                );
+              }
+            }).catchError((error) {
+              // Show error if save fails
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to update filters: $error'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            });
           },
           child: const Text('Save'),
         ),

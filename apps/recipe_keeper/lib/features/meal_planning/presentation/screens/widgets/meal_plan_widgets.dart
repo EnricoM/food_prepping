@@ -447,7 +447,7 @@ class _MealDayEditorState extends ConsumerState<MealDayEditor> {
 
     for (final recipeList in widget.selectedRecipes.values) {
       for (final entity in recipeList) {
-        for (final ingredient in entity.ingredients) {
+        for (final ingredient in entity.ingredientStrings) {
           final item = matchFor(ingredient);
           if (item != null) {
             reservationCounts[item] = (reservationCounts[item] ?? 0) + 1;
@@ -698,7 +698,7 @@ class _MealSlotCardState extends State<MealSlotCard> {
       if ((recipe.description ?? '').toLowerCase().contains(lowerQuery)) {
         return true;
       }
-      if (recipe.ingredients
+      if (recipe.ingredientStrings
           .any((ingredient) => ingredient.toLowerCase().contains(lowerQuery))) {
         return true;
       }
@@ -1103,7 +1103,7 @@ String _normalize(String value) {
 }
 
 String _ingredientsPreviewText(Recipe recipe, {int maxCount = 3}) {
-  final ingredients = recipe.ingredients;
+  final ingredients = recipe.ingredientStrings;
   if (ingredients.isEmpty) {
     return 'No ingredients listed';
   }

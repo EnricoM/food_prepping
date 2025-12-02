@@ -79,9 +79,10 @@ class CostEstimationService {
     }
 
     for (final ingredient in recipeObj.ingredients) {
-      final normalized = _normalizeIngredientName(ingredient);
-      final quantity = _extractQuantity(ingredient);
-      final unit = _extractUnit(ingredient);
+      final ingredientString = ingredient.displayString;
+      final normalized = _normalizeIngredientName(ingredientString);
+      final quantity = ingredient.quantity ?? _extractQuantity(ingredientString);
+      final unit = ingredient.unit ?? _extractUnit(ingredientString);
       
       InventoryItem? matchedItem;
       double? cost;
@@ -108,7 +109,7 @@ class CostEstimationService {
       // If no inventory match found, try default prices (if enabled)
       if (matchedItem == null && cost == null) {
         if (useDefaultPrices) {
-          final defaultPrice = DefaultIngredientPrices.getPrice(ingredient);
+          final defaultPrice = DefaultIngredientPrices.getPrice(ingredientString);
           if (defaultPrice != null) {
             cost = defaultPrice * quantity;
             totalCost = totalCost! + cost;
@@ -125,7 +126,7 @@ class CostEstimationService {
       }
 
       ingredientCosts.add(IngredientCost(
-        ingredient: ingredient,
+        ingredient: ingredientString,
         estimatedQuantity: quantity,
         unit: unit,
         cost: cost,

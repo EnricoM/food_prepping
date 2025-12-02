@@ -38,11 +38,11 @@ class InventoryRecipeMatcher {
       final missing = <String>[];
 
       for (final ingredient in recipeIngredients) {
-        final normalized = _normalizeIngredient(ingredient);
+        final normalized = _normalizeIngredient(ingredient.displayString);
         if (_isAvailable(normalized, inventoryNames)) {
-          available.add(ingredient);
+          available.add(ingredient.displayString);
         } else {
-          missing.add(ingredient);
+          missing.add(ingredient.displayString);
         }
       }
 

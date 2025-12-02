@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_ui/shared_ui.dart';
+import 'package:core/core.dart';
 
 import '../../../../app/di.dart';
 import '../../../../src/widgets/back_aware_app_bar.dart';
@@ -378,7 +379,7 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
-        ingredients: _ingredients,
+        ingredients: IngredientParser.parseList(_ingredients),
         instructions: instructions,
         servings: _servingsController.text.trim().isEmpty
             ? null

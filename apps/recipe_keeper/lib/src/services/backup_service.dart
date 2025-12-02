@@ -288,7 +288,7 @@ class BackupService {
           ? Duration(seconds: json['totalTime'] as int)
           : null,
       yield: json['yield'] as String?,
-      ingredients: (json['ingredients'] as List?)
+      ingredientStrings: (json['ingredients'] as List?)
               ?.map((i) => i as String)
               .toList() ??
           [],

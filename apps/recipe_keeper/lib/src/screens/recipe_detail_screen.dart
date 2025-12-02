@@ -29,7 +29,11 @@ class RecipeDetailScreen extends StatelessWidget {
   static void _showFilterDialog(BuildContext context, RecipeEntity entity) {
     showDialog(
       context: context,
-      builder: (context) => _FilterEditDialog(entity: entity),
+      builder: (context) {
+        // Fetch the latest entity from the store to ensure we have the most up-to-date values
+        final latestEntity = RecipeStore.instance.entityFor(entity.url) ?? entity;
+        return _FilterEditDialog(entity: latestEntity);
+      },
     );
   }
 
@@ -107,7 +111,11 @@ class RecipeDetailScreen extends StatelessWidget {
               IconButton(
                 tooltip: 'Edit filters',
                 icon: const Icon(Icons.filter_list),
-                onPressed: () => _showFilterDialog(context, entity),
+                onPressed: () {
+                  // Always fetch the latest entity from the store before showing the dialog
+                  final latestEntity = RecipeStore.instance.entityFor(entity.url) ?? entity;
+                  _showFilterDialog(context, latestEntity);
+                },
               ),
               IconButton(
                 tooltip:
@@ -172,7 +180,7 @@ class RecipeDetailScreen extends StatelessWidget {
         body: TabBarView(
           children: [
             _OverviewTab(recipe: recipe, entity: entity),
-            _IngredientsTab(ingredients: recipe.ingredients, recipe: recipe),
+            _IngredientsTab(ingredients: recipe.ingredientStrings, recipe: recipe),
             _InstructionsTab(instructions: recipe.instructions, recipe: recipe),
           ],
         ),
@@ -472,8 +480,8 @@ class _IngredientsTabState extends State<_IngredientsTab> {
           builder: (context, _) {
             final measurementSystem = MeasurementPreferences.instance.system;
             final converter = IngredientConverter(measurementSystem);
-            final convertedIngredients = displayIngredients
-                .map(converter.convert)
+            final convertedIngredients = (displayIngredients as List<String>)
+                .map<String>((ing) => converter.convert(ing))
                 .toList(growable: false);
             final isScaled = _scaledRecipe != null;
             return Expanded(
@@ -1096,10 +1104,29 @@ class _FilterEditDialogState extends State<_FilterEditDialog> {
   @override
   void initState() {
     super.initState();
-    _selectedContinent = widget.entity.continent;
-    _selectedCountry = widget.entity.country;
-    _selectedDiet = widget.entity.diet;
-    _selectedCourse = widget.entity.course;
+    // Fetch the latest entity from the store to ensure we have up-to-date values
+    final latestEntity = RecipeStore.instance.entityFor(widget.entity.url) ?? widget.entity;
+    _selectedContinent = latestEntity.continent;
+    _selectedCountry = latestEntity.country;
+    _selectedDiet = latestEntity.diet;
+    _selectedCourse = latestEntity.course;
+  }
+
+  @override
+  void didUpdateWidget(_FilterEditDialog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entity.url != widget.entity.url ||
+        oldWidget.entity.continent != widget.entity.continent ||
+        oldWidget.entity.country != widget.entity.country ||
+        oldWidget.entity.diet != widget.entity.diet ||
+        oldWidget.entity.course != widget.entity.course) {
+      // Fetch the latest entity from the store to ensure we have up-to-date values
+      final latestEntity = RecipeStore.instance.entityFor(widget.entity.url) ?? widget.entity;
+      _selectedContinent = latestEntity.continent;
+      _selectedCountry = latestEntity.country;
+      _selectedDiet = latestEntity.diet;
+      _selectedCourse = latestEntity.course;
+    }
   }
 
   @override
@@ -1156,7 +1183,7 @@ class _FilterEditDialogState extends State<_FilterEditDialog> {
               course: _selectedCourse,
             );
             if (context.mounted) {
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(true); // Return true to indicate success
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Filters updated')),
               );
