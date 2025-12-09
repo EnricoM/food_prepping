@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../services/backup_service.dart';
 import '../services/measurement_preferences.dart';
@@ -19,11 +20,22 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isExporting = false;
   bool _isImporting = false;
+  PackageInfo? _packageInfo;
 
   @override
   void initState() {
     super.initState();
     BackupService.instance.init();
+    _loadPackageInfo();
+  }
+
+  Future<void> _loadPackageInfo() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _packageInfo = packageInfo;
+      });
+    }
   }
 
   Future<void> _exportData() async {
@@ -210,6 +222,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: _isImporting ? null : _importData,
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          // Version info section
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                children: [
+                  if (_packageInfo != null) ...[
+                    Text(
+                      'Version ${_packageInfo!.version} (Build ${_packageInfo!.buildNumber})',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Package: ${_packageInfo!.packageName}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      'Loading version info...',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ],
