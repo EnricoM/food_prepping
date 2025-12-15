@@ -62,6 +62,15 @@ Future<void> main() async {
   // TourService.init() already calls TourProgress.instance.init(), so we don't need to call it again
   try {
     await TourService.instance.init();
+    
+    // On first launch, clear any default/test recipes that might exist
+    if (TourService.instance.isFirstLaunch) {
+      final allRecipes = RecipeStore.instance.allEntities();
+      if (allRecipes.isNotEmpty) {
+        debugPrint('First launch detected: Clearing ${allRecipes.length} recipe(s) from database');
+        await RecipeStore.instance.clear();
+      }
+    }
   } catch (e) {
     debugPrint('Error initializing tour service: $e');
   }
