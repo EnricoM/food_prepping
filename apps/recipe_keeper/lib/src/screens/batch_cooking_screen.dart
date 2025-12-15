@@ -3,6 +3,7 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'widgets/recipe_tile.dart';
@@ -24,8 +25,8 @@ class BatchCookingScreen extends StatelessWidget {
     final inset = responsivePageInsets(context);
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: const BackAwareAppBar(
-        title: Text('Batch Cooking'),
+      appBar: BackAwareAppBar(
+        title: Text(context.t.batchCooking.title),
       ),
       drawer: drawer ?? const AppDrawer(currentRoute: routeName),
       body: SafeArea(
@@ -48,7 +49,7 @@ class BatchCookingScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Error loading recipes',
+                          context.t.errors.errorLoadingRecipes,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),

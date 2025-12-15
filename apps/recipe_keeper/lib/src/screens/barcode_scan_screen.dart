@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_ui/shared_ui.dart';
+
+import '../../i18n/strings.g.dart';
 import '../widgets/back_aware_app_bar.dart';
 
 enum BarcodeScanTarget { inventory, shoppingList }
@@ -49,7 +51,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('Barcode scanner')),
+      appBar: BackAwareAppBar(title: Text(context.t.barcodeScan.title)),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -121,7 +123,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                       });
                     },
                     icon: const Icon(Icons.refresh_outlined),
-                    label: const Text('Rescan'),
+                    label: Text(context.t.barcodeScan.rescan),
                   ),
                 ],
               ),
@@ -229,7 +231,7 @@ class _ProductPreview extends StatelessWidget {
             if (product.quantity?.isNotEmpty ?? false)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('Quantity: ${product.quantity}'),
+                child: Text(context.t.barcodeScan.quantity.replaceAll('{quantity}', product.quantity!)),
               ),
             if (product.categories?.isNotEmpty ?? false)
               Padding(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 
@@ -26,7 +27,7 @@ class HomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('Recipe Keeper')),
+      appBar: BackAwareAppBar(title: Text(context.t.home.title)),
       drawer: const AppDrawer(currentRoute: routeName),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -70,7 +71,7 @@ class HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Hi there! 👋',
+                                context.t.home.greeting,
                                 style: theme.textTheme.headlineMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: -0.5,
@@ -78,7 +79,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Let\'s cook something amazing',
+                                context.t.home.description,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: colorScheme.onSurface.withValues(alpha: 0.7),
                                 ),
@@ -136,7 +137,7 @@ class HomeScreen extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: openManualRecipe,
                         icon: const Icon(Icons.create_outlined),
-                        label: const Text('Create manual recipe'),
+                        label: Text(context.t.home.createManualRecipe),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
@@ -145,7 +146,7 @@ class HomeScreen extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: openStoredRecipes,
                         icon: const Icon(Icons.book_outlined),
-                        label: const Text('Browse stored recipes'),
+                        label: Text(context.t.home.browseStoredRecipes),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
@@ -182,7 +183,7 @@ class HomeScreen extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: openShoppingList,
                         icon: const Icon(Icons.shopping_cart_outlined),
-                        label: const Text('Open shopping list'),
+                        label: Text(context.t.home.openShoppingList),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
@@ -191,7 +192,7 @@ class HomeScreen extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: openInventory,
                         icon: const Icon(Icons.inventory_2_outlined),
-                        label: const Text('Manage inventory'),
+                        label: Text(context.t.home.manageInventory),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),

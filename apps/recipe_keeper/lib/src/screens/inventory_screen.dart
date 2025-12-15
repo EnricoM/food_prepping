@@ -5,6 +5,7 @@ import 'package:shared_ui/shared_ui.dart';
 
 // ignore_for_file: use_build_context_synchronously
 
+import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'barcode_scan_screen.dart';
@@ -24,9 +25,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: const BackAwareAppBar(
-        title: Text('Inventory'),
-        actions: [_InventoryMenu()],
+      appBar: BackAwareAppBar(
+        title: Text(context.t.inventory.title),
+        actions: const [_InventoryMenu()],
       ),
       drawer: const AppDrawer(currentRoute: InventoryScreen.routeName),
       floatingActionButton: FloatingActionButton(
@@ -53,7 +54,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Error loading inventory',
+                          context.t.inventory.errorLoading,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -125,19 +126,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit_note_outlined),
-              title: const Text('Add item manually'),
+              title: Text(context.t.inventory.addItemManually),
               onTap: () =>
                   Navigator.of(sheetContext).pop(_InventoryAddAction.manual),
             ),
             ListTile(
               leading: const Icon(Icons.receipt_long_outlined),
-              title: const Text('Scan receipt (batch add)'),
+              title: Text(context.t.inventory.scanReceipt),
               onTap: () =>
                   Navigator.of(sheetContext).pop(_InventoryAddAction.receipt),
             ),
             ListTile(
               leading: const Icon(Icons.qr_code_scanner),
-              title: const Text('Scan barcode'),
+              title: Text(context.t.inventory.scanBarcode),
               onTap: () =>
                   Navigator.of(sheetContext).pop(_InventoryAddAction.barcode),
             ),
@@ -548,7 +549,7 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
     final itemName = _nameController.text.trim();
     if (itemName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an item name first')),
+        SnackBar(content: Text(context.t.inventory.enterItemName)),
       );
       return;
     }
@@ -560,15 +561,15 @@ class _InventoryEditorSheetState extends State<InventoryEditorSheet> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Suggested price: \$${suggestedPrice.toStringAsFixed(2)} per unit'),
+          content: Text(context.t.inventory.suggestedPrice.replaceAll('{price}', '\$${suggestedPrice.toStringAsFixed(2)}')),
           duration: const Duration(seconds: 2),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No default price available for this item'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(context.t.inventory.noDefaultPrice),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -656,24 +657,24 @@ class _InventoryMenu extends StatelessWidget {
             final messenger = ScaffoldMessenger.of(context);
             await _markLowStockAll();
             messenger.showSnackBar(
-              const SnackBar(content: Text('Marked low stock items.')),
+              SnackBar(content: Text(context.t.inventory.markedLowStock)),
             );
             break;
           case _InventoryMenuAction.clearAll:
             final confirmed = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('Clear inventory'),
-                content: const Text(
-                    'Are you sure you want to remove all inventory items?'),
+                title: Text(context.t.inventory.clearInventory),
+                content: Text(
+                    context.t.inventory.clearInventoryConfirm),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Cancel'),
+                    child: Text(context.t.common.cancel),
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Clear'),
+                    child: Text(context.t.inventory.clear),
                   ),
                 ],
               ),
