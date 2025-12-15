@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'i18n/strings.g.dart';
 import 'src/app.dart';
 import 'src/screens/initialization_error_screen.dart';
 import 'package:flutter/foundation.dart';
@@ -85,6 +86,16 @@ Future<void> main() async {
       debugPrint('Error initializing AdMob: $e');
       // Continue anyway - ads just won't work
     }
+  }
+  
+  // Initialize locale settings asynchronously before running app
+  // This handles deferred loading properly
+  try {
+    await LocaleSettings.useDeviceLocale();
+  } catch (e) {
+    // If device locale loading fails, fallback to base locale (English)
+    debugPrint('Warning: Could not load device locale, using base locale: $e');
+    LocaleSettings.setLocaleSync(AppLocale.en);
   }
   
   runApp(

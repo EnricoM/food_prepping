@@ -48,9 +48,6 @@ class RecipeParserApp extends StatelessWidget {
       brightness: Brightness.light,
     );
 
-    // Initialize locale settings - use device locale or default to English
-    LocaleSettings.useDeviceLocaleSync();
-    
     return TranslationProvider(
       child: Builder(
         builder: (context) {
