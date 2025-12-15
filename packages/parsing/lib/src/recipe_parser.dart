@@ -7,6 +7,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 
 import 'package:core/core.dart';
+import 'http_utils.dart';
 
 class RecipeParseException implements Exception {
   RecipeParseException(this.message, {this.cause});
@@ -33,15 +34,11 @@ class RecipeParser {
 
     final hasCustomUserAgent = headers?.containsKey('User-Agent') ?? false;
     final headerCandidates = <Map<String, String>>[
-      {
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept':
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,nl;q=0.8',
-      },
-      if (!hasCustomUserAgent) {'User-Agent': 'curl/8.5.0', 'Accept': '*/*'},
+      ...HttpUtils.defaultHeaderCandidates,
+      if (!hasCustomUserAgent && !HttpUtils.defaultHeaderCandidates.any(
+            (h) => h['User-Agent'] == 'curl/8.5.0',
+          ))
+        {'User-Agent': 'curl/8.5.0', 'Accept': '*/*'},
     ];
 
     if (headerCandidates.isEmpty) {
@@ -91,7 +88,7 @@ class RecipeParser {
       return response;
     }
 
-    final responseCookies = _cookieHeaderFromSetCookie(
+    final responseCookies = HttpUtils.cookieHeaderFromSetCookie(
       response.headers['set-cookie'],
     );
     if (responseCookies != null) {
@@ -122,36 +119,15 @@ class RecipeParser {
     return response;
   }
 
-  bool _shouldRetry(int statusCode) => statusCode == 401 || statusCode == 403;
+  bool _shouldRetry(int statusCode) =>
+      HttpUtils.shouldRetryWithCookies(statusCode);
 
   Future<String?> _fetchHostCookies(
     Uri uri,
     Map<String, String> headers,
     Duration timeout,
   ) async {
-    final rootUri = uri.replace(path: '/');
-    try {
-      final retryHeaders = Map<String, String>.from(headers)
-        ..remove('Accept-Encoding');
-      final response =
-          await _client.get(rootUri, headers: retryHeaders).timeout(timeout);
-      return _cookieHeaderFromSetCookie(response.headers['set-cookie']);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  String? _cookieHeaderFromSetCookie(String? setCookie) {
-    if (setCookie == null || setCookie.isEmpty) {
-      return null;
-    }
-    final matches = RegExp(r'([^=,\s]+=[^;]+)').allMatches(setCookie);
-    final values =
-        matches.map((match) => match.group(0)).whereType<String>().toList();
-    if (values.isEmpty) {
-      return null;
-    }
-    return values.join('; ');
+    return HttpUtils.fetchHostCookies(_client, uri, headers, timeout);
   }
 
   Future<RecipeParseResult> parseHtml(String html, {String? sourceUrl}) async {
@@ -352,7 +328,7 @@ class RecipeParser {
       recipe: Recipe(
         title: title,
         description: description,
-        ingredients: ingredients,
+        ingredientStrings: ingredients,
         instructions: instructions,
         imageUrl: _resolveUrl(imageUrl, baseUri),
         sourceUrl: baseUri?.toString(),
@@ -420,7 +396,7 @@ class RecipeParser {
       description: description,
       author: author,
       imageUrl: imageUrl,
-      ingredients: ingredients,
+      ingredientStrings: ingredients,
       instructions: instructions,
       sourceUrl: baseUri?.toString(),
       yield: yieldValue,
@@ -491,7 +467,7 @@ class RecipeParser {
       description: description,
       author: author,
       imageUrl: _resolveUrl(imageUrl, baseUri),
-      ingredients: ingredients,
+      ingredientStrings: ingredients,
       instructions: instructions,
       sourceUrl: baseUri?.toString(),
       yield: yieldValue,
@@ -841,7 +817,7 @@ class RecipeParser {
           _elementText(container.querySelector('.wprm-recipe-summary')),
       author: _elementText(container.querySelector('.wprm-recipe-author')),
       imageUrl: _resolveUrl(imageUrl, baseUri),
-      ingredients: ingredients,
+      ingredientStrings: ingredients,
       instructions: instructions,
       sourceUrl: baseUri?.toString(),
       yield: yieldValue,
@@ -911,7 +887,7 @@ class RecipeParser {
           _elementText(container.querySelector('.tasty-recipes-description')),
       author: _elementText(container.querySelector('.tasty-recipes-author')),
       imageUrl: _resolveUrl(imageUrl, baseUri),
-      ingredients: ingredients,
+      ingredientStrings: ingredients,
       instructions: instructions,
       sourceUrl: baseUri?.toString(),
       yield: yieldValue,

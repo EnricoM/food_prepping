@@ -61,7 +61,7 @@ class ShoppingListStore {
 
   Future<void> addIngredientsFromRecipe(Recipe recipe) {
     return addItems(
-      recipe.ingredients
+      recipe.ingredientStrings
           .map(
             (ingredient) => ShoppingListItem(
               ingredient: ingredient.trim(),
@@ -82,7 +82,7 @@ class ShoppingListStore {
     final items = <ShoppingListItem>[];
     for (final recipe in recipes) {
       items.addAll(
-        recipe.ingredients
+        recipe.ingredientStrings
             .map(
               (ingredient) => ShoppingListItem(
                 ingredient: ingredient.trim(),

@@ -1,4 +1,5 @@
 name: core
+resolution: workspace
 version: 0.1.0
 publish_to: 'none'
 

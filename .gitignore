@@ -31,7 +31,9 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+**/build/
 /coverage/
+**/coverage/
 
 # Symbolication related
 app.*.symbols
@@ -40,9 +42,21 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+apps/*/android/app/debug
+apps/*/android/app/profile
+apps/*/android/app/release
+apps/*/android/build/
+
+# Build directories - should never be committed
+**/build/
+**/*.cache.dill*
+**/*.dill.track.dill
+
+# Android build outputs
+**/android/app/build/
+**/android/build/
+**/app/outputs/
+**/app/intermediates/
 
 # Keystore files - NEVER commit these!
 android/key.properties

@@ -1,4 +1,5 @@
 name: capture
+resolution: workspace
 description: Services for scanning receipts and barcodes.
 version: 0.0.1
 publish_to: 'none'

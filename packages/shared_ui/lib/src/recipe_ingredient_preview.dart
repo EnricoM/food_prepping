@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 
 String ingredientsPreview(Recipe recipe, {int maxCount = 3}) {
-  final ingredients = recipe.ingredients;
+  final ingredients = recipe.ingredientStrings;
   if (ingredients.isEmpty) {
     return 'No ingredients listed';
   }

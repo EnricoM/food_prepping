@@ -8,7 +8,9 @@ class RecipeEntity extends HiveObject {
   RecipeEntity({
     required this.url,
     required this.title,
-    required this.ingredients,
+    List<Ingredient>? ingredients,
+    List<String>? ingredientStrings,
+    List<Map<String, dynamic>>? ingredientsData,
     required this.instructions,
     required this.cachedAt,
     required this.strategy,
@@ -28,12 +30,46 @@ class RecipeEntity extends HiveObject {
     this.totalTimeSeconds,
     this.metadataJson,
     this.isFavorite = false,
-  });
+  }) : _ingredientsData = ingredientsData ??
+            (ingredients != null
+                ? ingredients.map((ing) => {
+                    'quantity': ing.quantity,
+                    'unit': ing.unit,
+                    'name': ing.name,
+                    'original': ing.original,
+                  }).toList()
+                : (ingredientStrings != null
+                    ? IngredientParser.parseList(ingredientStrings)
+                        .map((ing) => {
+                            'quantity': ing.quantity,
+                            'unit': ing.unit,
+                            'name': ing.name,
+                            'original': ing.original,
+                          }).toList()
+                    : []));
 
   final String url;
   final String title;
-  final List<String> ingredients;
+  // Store ingredients as List<Map> for Hive serialization
+  // Format: [{'quantity': double?, 'unit': String?, 'name': String, 'original': String}]
+  final List<Map<String, dynamic>> _ingredientsData;
   final List<String> instructions;
+
+  /// Get ingredients as structured Ingredient objects
+  List<Ingredient> get ingredients {
+    return _ingredientsData
+        .map((data) => Ingredient(
+              quantity: data['quantity'] as double?,
+              unit: data['unit'] as String?,
+              name: data['name'] as String? ?? '',
+              original: data['original'] as String? ?? '',
+            ))
+        .toList(growable: false);
+  }
+
+  /// Get ingredients as strings (for backward compatibility)
+  List<String> get ingredientStrings =>
+      ingredients.map((ing) => ing.displayString).toList(growable: false);
   final DateTime cachedAt;
   final String strategy;
   final List<String> categories;
@@ -68,7 +104,7 @@ class RecipeEntity extends HiveObject {
       : _buildSearchableText(
           title: title,
           description: description,
-          ingredients: ingredients,
+          ingredients: ingredientStrings,
           instructions: instructions,
           categories: effectiveCategories,
           notes: [
@@ -130,20 +166,24 @@ class RecipeEntity extends HiveObject {
     String? country,
     String? diet,
     String? course,
+    bool updateContinent = false,
+    bool updateCountry = false,
+    bool updateDiet = false,
+    bool updateCourse = false,
   }) {
     return RecipeEntity(
       url: url,
       title: title,
-      ingredients: ingredients,
+      ingredientsData: _ingredientsData,
       instructions: instructions,
       cachedAt: cachedAt,
       strategy: strategy,
       categories: categories,
       searchableText: searchableText,
-      country: country ?? this.country,
-      continent: continent ?? this.continent,
-      diet: diet ?? this.diet,
-      course: course ?? this.course,
+      country: updateCountry ? country : (country ?? this.country),
+      continent: updateContinent ? continent : (continent ?? this.continent),
+      diet: updateDiet ? diet : (diet ?? this.diet),
+      course: updateCourse ? course : (course ?? this.course),
       description: description,
       imageUrl: imageUrl,
       author: author,
@@ -184,7 +224,7 @@ class RecipeEntity extends HiveObject {
     final searchableText = _buildSearchableText(
       title: recipe.title,
       description: recipe.description,
-      ingredients: recipe.ingredients,
+      ingredients: recipe.ingredientStrings,
       instructions: recipe.instructions,
       categories: resolvedCategories,
       notes: [
@@ -209,7 +249,7 @@ class RecipeEntity extends HiveObject {
       cookTimeSeconds: recipe.cookTime?.inSeconds,
       totalTimeSeconds: recipe.totalTime?.inSeconds,
       metadataJson: metadata.isEmpty ? null : jsonEncode(metadata),
-      ingredients: List<String>.from(recipe.ingredients),
+      ingredients: recipe.ingredients,
       instructions: List<String>.from(recipe.instructions),
       cachedAt: DateTime.now(),
       strategy: strategy,
@@ -232,6 +272,8 @@ class RecipeEntity extends HiveObject {
 
     return Recipe(
       title: title,
+      ingredients: ingredients,
+      instructions: instructions,
       description: description,
       imageUrl: imageUrl,
       author: author,
@@ -240,8 +282,6 @@ class RecipeEntity extends HiveObject {
       prepTime: _durationFromSeconds(prepTimeSeconds),
       cookTime: _durationFromSeconds(cookTimeSeconds),
       totalTime: _durationFromSeconds(totalTimeSeconds),
-      ingredients: ingredients,
-      instructions: instructions,
       metadata: metadata,
     );
   }
@@ -338,10 +378,34 @@ class RecipeEntityAdapter extends TypeAdapter<RecipeEntity> {
       fields[key] = reader.read();
     }
 
+    // Handle backward compatibility: convert old List<String> format to new List<Map> format
+    final ingredientsField = fields[2];
+    List<Map<String, dynamic>> ingredientsData;
+    if (ingredientsField is List) {
+      if (ingredientsField.isNotEmpty && ingredientsField.first is String) {
+        // Old format: List<String>
+        final oldStrings = ingredientsField.cast<String>();
+        ingredientsData = IngredientParser.parseList(oldStrings)
+            .map((ing) => {
+                'quantity': ing.quantity,
+                'unit': ing.unit,
+                'name': ing.name,
+                'original': ing.original,
+              }).toList();
+      } else if (ingredientsField.first is Map) {
+        // New format: List<Map>
+        ingredientsData = ingredientsField.cast<Map>().map((map) => Map<String, dynamic>.from(map)).toList();
+      } else {
+        ingredientsData = [];
+      }
+    } else {
+      ingredientsData = [];
+    }
+
     return RecipeEntity(
       url: fields[0] as String,
       title: fields[1] as String,
-      ingredients: (fields[2] as List?)?.cast<String>() ?? const [],
+      ingredientsData: ingredientsData,
       instructions: (fields[3] as List?)?.cast<String>() ?? const [],
       cachedAt: fields[4] is int
           ? DateTime.fromMillisecondsSinceEpoch(fields[4] as int)
@@ -375,7 +439,7 @@ class RecipeEntityAdapter extends TypeAdapter<RecipeEntity> {
       ..writeByte(1)
       ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.ingredients)
+      ..write(obj._ingredientsData)
       ..writeByte(3)
       ..write(obj.instructions)
       ..writeByte(4)

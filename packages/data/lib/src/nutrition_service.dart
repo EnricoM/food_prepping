@@ -55,8 +55,8 @@ class NutritionService {
     double? estimatedFat;
 
     for (final ingredient in ingredients) {
-      final lower = ingredient.toLowerCase();
-      final quantity = _extractQuantity(ingredient);
+      final lower = ingredient.displayString.toLowerCase();
+      final quantity = ingredient.quantity ?? _extractQuantity(ingredient.displayString);
 
       // Very basic estimation (would need a proper database in production)
       if (lower.contains('chicken') || lower.contains('beef') || lower.contains('pork')) {

@@ -1,9 +1,13 @@
 import 'dart:collection';
 
+import 'ingredient.dart';
+import 'ingredient_parser.dart';
+
 class Recipe {
   Recipe({
     required this.title,
-    required List<String> ingredients,
+    List<Ingredient>? ingredients,
+    List<String>? ingredientStrings,
     required List<String> instructions,
     this.description,
     this.imageUrl,
@@ -15,9 +19,15 @@ class Recipe {
     this.totalTime,
     Map<String, Object?> metadata = const {},
   })  : ingredients = List.unmodifiable(
-          ingredients
-              .where((item) => item.trim().isNotEmpty)
-              .map((item) => item.trim()),
+          ingredients ??
+              (ingredientStrings != null
+                  ? IngredientParser.parseList(
+                      ingredientStrings
+                          .where((item) => item.trim().isNotEmpty)
+                          .map((item) => item.trim())
+                          .toList(),
+                    )
+                  : []),
         ),
         instructions = List.unmodifiable(
           instructions
@@ -27,8 +37,12 @@ class Recipe {
         metadata = UnmodifiableMapView(metadata);
 
   final String title;
-  final List<String> ingredients;
+  final List<Ingredient> ingredients;
   final List<String> instructions;
+
+  /// Get ingredients as strings (for backward compatibility)
+  List<String> get ingredientStrings =>
+      ingredients.map((ing) => ing.displayString).toList(growable: false);
   final String? description;
   final String? imageUrl;
   final String? author;
@@ -60,7 +74,7 @@ class Recipe {
 
   Recipe copyWith({
     String? title,
-    List<String>? ingredients,
+    List<Ingredient>? ingredients,
     List<String>? instructions,
     String? description,
     String? imageUrl,
