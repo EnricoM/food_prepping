@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Recipe Keeper"
+    "name": "Receptenboek"
   },
   "home": {
     "title": "Recipe Keeper",
@@ -13,44 +13,44 @@
     "manageInventory": "Manage inventory"
   },
   "common": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "done": "Done",
-    "close": "Close",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "done": "Gereed",
+    "close": "Sluiten",
     "ok": "OK",
-    "yes": "Yes",
-    "no": "No",
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success"
+    "yes": "Ja",
+    "no": "Nee",
+    "loading": "Bezig met laden...",
+    "error": "Fout",
+    "success": "Geslaagd"
   },
   "settings": {
-    "title": "Settings",
+    "title": "Instellingen",
     "measurements": {
-      "title": "Measurements",
-      "description": "Choose how ingredient units are displayed. Recipes using a different system will be automatically converted to your preference.",
+      "title": "Maten",
+      "description": "Kies hoe ingrediënten worden weergegeven. Recepten die een ander systeem gebruiken, worden automatisch omgezet naar jouw voorkeur.",
       "metric": {
-        "name": "Metric (grams & milliliters)",
-        "description": "Ingredients show grams, kilograms, milliliters and liters."
+        "name": "Metrisch (grammen en milliliters)",
+        "description": "Ingrediënten worden weergegeven in gram, kilogram, milliliter en liter."
       },
       "imperial": {
-        "name": "US Customary (cups & ounces)",
-        "description": "Ingredients show cups, tablespoons, teaspoons, ounces and pounds."
+        "name": "Amerikaanse maatstaven (kopjes en ounces)",
+        "description": "Ingrediënten worden weergegeven in kopjes, eetlepels, theelepels, ounces en ponden."
       }
     },
     "dataManagement": {
-      "title": "Data Management",
-      "description": "Export your recipes, meal plans, shopping list, and inventory to a JSON file. You can import this file later to restore your data.",
-      "exportData": "Export Data",
-      "exportDataDescription": "Save all your data to a JSON file",
-      "importData": "Import Data",
-      "importDataDescription": "Restore data from a JSON backup file",
-      "exportSuccess": "Data exported successfully to:\n{path}",
-      "exportError": "Failed to export data: {error}",
-      "importSuccess": "Data imported successfully!",
-      "importError": "Failed to import data: {error}"
+      "title": "Gegevensbeheer",
+      "description": "Exporteer uw recepten, maaltijdplannen, boodschappenlijstjes en voorraad naar een JSON-bestand. U kunt dit bestand later importeren om uw gegevens te herstellen.",
+      "exportData": "Gegevens exporteren",
+      "exportDataDescription": "Sla al uw gegevens op in een JSON-bestand",
+      "importData": "Gegevens importeren",
+      "importDataDescription": "Gegevens herstellen vanuit een JSON-back-upbestand",
+      "exportSuccess": "Gegevens succesvol geëxporteerd naar:\n{path}",
+      "exportError": "Exporteren van gegevens mislukt: {error}",
+      "importSuccess": "Gegevens succesvol geïmporteerd!",
+      "importError": "Kan gegevens niet importeren: {error}"
     },
     "version": {
       "loading": "Loading version info...",
