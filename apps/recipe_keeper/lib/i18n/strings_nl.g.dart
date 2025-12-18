@@ -69,7 +69,7 @@ class _TranslationsAppNl extends TranslationsAppEn {
 	final TranslationsNl _root; // ignore: unused_field
 
 	// Translations
-	@override String get name => 'Recipe Keeper';
+	@override String get name => 'Receptenboek';
 }
 
 // Path: home
@@ -96,18 +96,18 @@ class _TranslationsCommonNl extends TranslationsCommonEn {
 	final TranslationsNl _root; // ignore: unused_field
 
 	// Translations
-	@override String get save => 'Save';
-	@override String get cancel => 'Cancel';
-	@override String get delete => 'Delete';
-	@override String get edit => 'Edit';
-	@override String get done => 'Done';
-	@override String get close => 'Close';
+	@override String get save => 'Opslaan';
+	@override String get cancel => 'Annuleren';
+	@override String get delete => 'Verwijderen';
+	@override String get edit => 'Bewerken';
+	@override String get done => 'Gereed';
+	@override String get close => 'Sluiten';
 	@override String get ok => 'OK';
-	@override String get yes => 'Yes';
-	@override String get no => 'No';
-	@override String get loading => 'Loading...';
-	@override String get error => 'Error';
-	@override String get success => 'Success';
+	@override String get yes => 'Ja';
+	@override String get no => 'Nee';
+	@override String get loading => 'Bezig met laden...';
+	@override String get error => 'Fout';
+	@override String get success => 'Geslaagd';
 }
 
 // Path: settings
@@ -117,7 +117,7 @@ class _TranslationsSettingsNl extends TranslationsSettingsEn {
 	final TranslationsNl _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Settings';
+	@override String get title => 'Instellingen';
 	@override late final _TranslationsSettingsMeasurementsNl measurements = _TranslationsSettingsMeasurementsNl._(_root);
 	@override late final _TranslationsSettingsDataManagementNl dataManagement = _TranslationsSettingsDataManagementNl._(_root);
 	@override late final _TranslationsSettingsVersionNl version = _TranslationsSettingsVersionNl._(_root);
@@ -477,8 +477,8 @@ class _TranslationsSettingsMeasurementsNl extends TranslationsSettingsMeasuremen
 	final TranslationsNl _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Measurements';
-	@override String get description => 'Choose how ingredient units are displayed. Recipes using a different system will be automatically converted to your preference.';
+	@override String get title => 'Maten';
+	@override String get description => 'Kies hoe ingrediënten worden weergegeven. Recepten die een ander systeem gebruiken, worden automatisch omgezet naar jouw voorkeur.';
 	@override late final _TranslationsSettingsMeasurementsMetricNl metric = _TranslationsSettingsMeasurementsMetricNl._(_root);
 	@override late final _TranslationsSettingsMeasurementsImperialNl imperial = _TranslationsSettingsMeasurementsImperialNl._(_root);
 }
@@ -490,16 +490,16 @@ class _TranslationsSettingsDataManagementNl extends TranslationsSettingsDataMana
 	final TranslationsNl _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Data Management';
-	@override String get description => 'Export your recipes, meal plans, shopping list, and inventory to a JSON file. You can import this file later to restore your data.';
-	@override String get exportData => 'Export Data';
-	@override String get exportDataDescription => 'Save all your data to a JSON file';
-	@override String get importData => 'Import Data';
-	@override String get importDataDescription => 'Restore data from a JSON backup file';
-	@override String get exportSuccess => 'Data exported successfully to:\n{path}';
-	@override String get exportError => 'Failed to export data: {error}';
-	@override String get importSuccess => 'Data imported successfully!';
-	@override String get importError => 'Failed to import data: {error}';
+	@override String get title => 'Gegevensbeheer';
+	@override String get description => 'Exporteer uw recepten, maaltijdplannen, boodschappenlijstjes en voorraad naar een JSON-bestand. U kunt dit bestand later importeren om uw gegevens te herstellen.';
+	@override String get exportData => 'Gegevens exporteren';
+	@override String get exportDataDescription => 'Sla al uw gegevens op in een JSON-bestand';
+	@override String get importData => 'Gegevens importeren';
+	@override String get importDataDescription => 'Gegevens herstellen vanuit een JSON-back-upbestand';
+	@override String get exportSuccess => 'Gegevens succesvol geëxporteerd naar:\n{path}';
+	@override String get exportError => 'Exporteren van gegevens mislukt: {error}';
+	@override String get importSuccess => 'Gegevens succesvol geïmporteerd!';
+	@override String get importError => 'Kan gegevens niet importeren: {error}';
 }
 
 // Path: settings.version
@@ -551,8 +551,8 @@ class _TranslationsSettingsMeasurementsMetricNl extends TranslationsSettingsMeas
 	final TranslationsNl _root; // ignore: unused_field
 
 	// Translations
-	@override String get name => 'Metric (grams & milliliters)';
-	@override String get description => 'Ingredients show grams, kilograms, milliliters and liters.';
+	@override String get name => 'Metrisch (grammen en milliliters)';
+	@override String get description => 'Ingrediënten worden weergegeven in gram, kilogram, milliliter en liter.';
 }
 
 // Path: settings.measurements.imperial
@@ -562,8 +562,8 @@ class _TranslationsSettingsMeasurementsImperialNl extends TranslationsSettingsMe
 	final TranslationsNl _root; // ignore: unused_field
 
 	// Translations
-	@override String get name => 'US Customary (cups & ounces)';
-	@override String get description => 'Ingredients show cups, tablespoons, teaspoons, ounces and pounds.';
+	@override String get name => 'Amerikaanse maatstaven (kopjes en ounces)';
+	@override String get description => 'Ingrediënten worden weergegeven in kopjes, eetlepels, theelepels, ounces en ponden.';
 }
 
 /// The flat map containing all translations for locale <nl>.
@@ -574,7 +574,7 @@ class _TranslationsSettingsMeasurementsImperialNl extends TranslationsSettingsMe
 extension on TranslationsNl {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'app.name' => 'Recipe Keeper',
+			'app.name' => 'Receptenboek',
 			'home.title' => 'Recipe Keeper',
 			'home.greeting' => 'Hi there! 👋',
 			'home.description' => 'Manage your recipes, meal plans, and shopping lists all in one place.',
@@ -583,35 +583,35 @@ extension on TranslationsNl {
 			'home.browseStoredRecipes' => 'Browse stored recipes',
 			'home.openShoppingList' => 'Open shopping list',
 			'home.manageInventory' => 'Manage inventory',
-			'common.save' => 'Save',
-			'common.cancel' => 'Cancel',
-			'common.delete' => 'Delete',
-			'common.edit' => 'Edit',
-			'common.done' => 'Done',
-			'common.close' => 'Close',
+			'common.save' => 'Opslaan',
+			'common.cancel' => 'Annuleren',
+			'common.delete' => 'Verwijderen',
+			'common.edit' => 'Bewerken',
+			'common.done' => 'Gereed',
+			'common.close' => 'Sluiten',
 			'common.ok' => 'OK',
-			'common.yes' => 'Yes',
-			'common.no' => 'No',
-			'common.loading' => 'Loading...',
-			'common.error' => 'Error',
-			'common.success' => 'Success',
-			'settings.title' => 'Settings',
-			'settings.measurements.title' => 'Measurements',
-			'settings.measurements.description' => 'Choose how ingredient units are displayed. Recipes using a different system will be automatically converted to your preference.',
-			'settings.measurements.metric.name' => 'Metric (grams & milliliters)',
-			'settings.measurements.metric.description' => 'Ingredients show grams, kilograms, milliliters and liters.',
-			'settings.measurements.imperial.name' => 'US Customary (cups & ounces)',
-			'settings.measurements.imperial.description' => 'Ingredients show cups, tablespoons, teaspoons, ounces and pounds.',
-			'settings.dataManagement.title' => 'Data Management',
-			'settings.dataManagement.description' => 'Export your recipes, meal plans, shopping list, and inventory to a JSON file. You can import this file later to restore your data.',
-			'settings.dataManagement.exportData' => 'Export Data',
-			'settings.dataManagement.exportDataDescription' => 'Save all your data to a JSON file',
-			'settings.dataManagement.importData' => 'Import Data',
-			'settings.dataManagement.importDataDescription' => 'Restore data from a JSON backup file',
-			'settings.dataManagement.exportSuccess' => 'Data exported successfully to:\n{path}',
-			'settings.dataManagement.exportError' => 'Failed to export data: {error}',
-			'settings.dataManagement.importSuccess' => 'Data imported successfully!',
-			'settings.dataManagement.importError' => 'Failed to import data: {error}',
+			'common.yes' => 'Ja',
+			'common.no' => 'Nee',
+			'common.loading' => 'Bezig met laden...',
+			'common.error' => 'Fout',
+			'common.success' => 'Geslaagd',
+			'settings.title' => 'Instellingen',
+			'settings.measurements.title' => 'Maten',
+			'settings.measurements.description' => 'Kies hoe ingrediënten worden weergegeven. Recepten die een ander systeem gebruiken, worden automatisch omgezet naar jouw voorkeur.',
+			'settings.measurements.metric.name' => 'Metrisch (grammen en milliliters)',
+			'settings.measurements.metric.description' => 'Ingrediënten worden weergegeven in gram, kilogram, milliliter en liter.',
+			'settings.measurements.imperial.name' => 'Amerikaanse maatstaven (kopjes en ounces)',
+			'settings.measurements.imperial.description' => 'Ingrediënten worden weergegeven in kopjes, eetlepels, theelepels, ounces en ponden.',
+			'settings.dataManagement.title' => 'Gegevensbeheer',
+			'settings.dataManagement.description' => 'Exporteer uw recepten, maaltijdplannen, boodschappenlijstjes en voorraad naar een JSON-bestand. U kunt dit bestand later importeren om uw gegevens te herstellen.',
+			'settings.dataManagement.exportData' => 'Gegevens exporteren',
+			'settings.dataManagement.exportDataDescription' => 'Sla al uw gegevens op in een JSON-bestand',
+			'settings.dataManagement.importData' => 'Gegevens importeren',
+			'settings.dataManagement.importDataDescription' => 'Gegevens herstellen vanuit een JSON-back-upbestand',
+			'settings.dataManagement.exportSuccess' => 'Gegevens succesvol geëxporteerd naar:\n{path}',
+			'settings.dataManagement.exportError' => 'Exporteren van gegevens mislukt: {error}',
+			'settings.dataManagement.importSuccess' => 'Gegevens succesvol geïmporteerd!',
+			'settings.dataManagement.importError' => 'Kan gegevens niet importeren: {error}',
 			'settings.version.loading' => 'Loading version info...',
 			'settings.version.format' => 'Version {version} (Build {buildNumber})',
 			'settings.version.package' => 'Package: {packageName}',
