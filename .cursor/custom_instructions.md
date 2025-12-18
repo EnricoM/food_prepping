@@ -38,6 +38,45 @@ These rules describe how AI assistants should author code in this Flutter projec
 
 Customize any section above to better fit the workflow; these are only starter defaults.
 
+## Multi-lingual Support
+
+The app uses **slang** package for handling different languages and localization.
+
+### Key Requirements
+- The app must follow the language of the device (use device locale automatically)
+- If no translations are available for the device language, the app must default to English
+- All user-facing strings must be localized and stored in translation files managed by slang
+
+### Implementation Guidelines
+- Use slang's code generation to create typed translation keys
+- Store translation files in the appropriate localization directory structure
+- Configure the MaterialApp with proper locale resolution that:
+  1. First checks if the device locale is supported
+  2. Falls back to English (`en`) if the device locale is not available
+  3. Uses slang's generated localization delegates
+- Always provide English translations as the base/default language
+- When adding new UI strings, immediately add them to all translation files or mark them as TODO if translations are pending
+
+### Locale Resolution Example
+```dart
+MaterialApp(
+  supportedLocales: AppLocaleUtils.supportedLocales,
+  locale: _deviceLocale,
+  localeResolutionCallback: (deviceLocale, supportedLocales) {
+    // Check if device locale is supported
+    for (var locale in supportedLocales) {
+      if (locale.languageCode == deviceLocale?.languageCode) {
+        return locale;
+      }
+    }
+    // Default to English if device locale not supported
+    return const Locale('en');
+  },
+  localizationsDelegates: AppLocaleUtils.localizationsDelegates,
+  // ... rest of config
+)
+```
+
 ## Documentation
 All documentation files are located in the `docs/` folder.
 

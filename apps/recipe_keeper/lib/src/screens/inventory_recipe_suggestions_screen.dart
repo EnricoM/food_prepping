@@ -2,6 +2,7 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'recipe_detail_screen.dart';
@@ -17,7 +18,7 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('What Can I Make?')),
+      appBar: BackAwareAppBar(title: Text(context.t.inventorySuggestions.title)),
       drawer: drawer ?? const AppDrawer(currentRoute: InventoryRecipeSuggestionsScreen.routeName),
       body: SafeArea(
         child: StreamBuilder<List<InventoryItem>>(
@@ -52,14 +53,14 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'No items in inventory',
+                        context.t.inventorySuggestions.noItems,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Add items to your inventory to see recipe suggestions.',
+                        context.t.inventorySuggestions.addItemsDescription,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
@@ -91,7 +92,7 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'Error loading recipes',
+                            context.t.inventorySuggestions.errorLoading,
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),

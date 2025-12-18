@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meal_planner/meal_planner.dart';
 
+import '../../i18n/strings.g.dart';
 import '../services/tour_service.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
@@ -802,9 +803,9 @@ class _TourScreenState extends State<TourScreen> {
       (route) => false,
     );
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('🎉 Tour completed! You\'re ready to start cooking!'),
-        duration: Duration(seconds: 3),
+      SnackBar(
+        content: Text(context.t.tour.completed),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -815,7 +816,7 @@ class _TourScreenState extends State<TourScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('App Tour')),
+      appBar: BackAwareAppBar(title: Text(context.t.tour.title)),
       drawer: const AppDrawer(currentRoute: TourScreen.routeName),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -897,7 +898,7 @@ class _TourScreenState extends State<TourScreen> {
               FilledButton.icon(
                 onPressed: _startTour,
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Start Complete Tour'),
+                label: Text(context.t.tour.startCompleteTour),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -1034,7 +1035,7 @@ class _TourStepDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: onSkip,
-          child: const Text('Skip'),
+          child: Text(context.t.tour.skip),
         ),
         FilledButton(
           onPressed: () {

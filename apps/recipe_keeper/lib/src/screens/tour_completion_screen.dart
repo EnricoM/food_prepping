@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/strings.g.dart';
 import '../services/tour_progress.dart';
 import 'home_screen.dart';
 
@@ -47,7 +48,7 @@ class TourCompletionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               Text(
-                '🎉 Tour Completed!',
+                context.t.tour.tourCompleted,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -55,7 +56,7 @@ class TourCompletionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'You\'re now ready to start cooking with Recipe Keeper!',
+                context.t.tour.readyToStart,
                 style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -74,7 +75,7 @@ class TourCompletionScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'What You Learned',
+                            context.t.tour.whatYouLearned,
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -119,7 +120,7 @@ class TourCompletionScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Pro Tips',
+                        context.t.tour.proTips,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -127,15 +128,15 @@ class TourCompletionScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       _ProTip(
                         icon: Icons.explore,
-                        text: 'Use domain discovery to pull whole recipe libraries',
+                        text: context.t.tour.proTip1,
                       ),
                       _ProTip(
                         icon: Icons.star,
-                        text: 'Favorite recipes to surface them in meal planning',
+                        text: context.t.tour.proTip2,
                       ),
                       _ProTip(
                         icon: Icons.inventory_2,
-                        text: 'Keep your inventory updated for better recipe suggestions',
+                        text: context.t.tour.proTip3,
                       ),
                     ],
                   ),
@@ -150,7 +151,7 @@ class TourCompletionScreen extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.home),
-                label: const Text('Start Cooking!'),
+                label: Text(context.t.tour.startCooking),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: 16,

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:parsing/parsing.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import '../../features/recipes/presentation/widgets/network_image_with_fallback.dart';
@@ -64,7 +65,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     final inset = responsivePageInsets(context);
     return Scaffold(
       appBar: BackAwareAppBar(
-        title: const Text('Add recipe from URL'),
+        title: Text(context.t.recipes.addRecipeFromUrl),
       ),
       drawer:
           widget.drawer ?? const AppDrawer(currentRoute: AddRecipeScreen.routeName),
@@ -191,7 +192,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           : url;
       final entity = repositories.recipes.entityFor(key);
       scaffold.showSnackBar(
-        const SnackBar(content: Text('Recipe saved to your library.')),
+        SnackBar(content: Text(context.t.recipes.recipeSaved)),
       );
       widget.onRecipeSaved(
         context,
@@ -199,7 +200,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       );
     } catch (error) {
       scaffold.showSnackBar(
-        SnackBar(content: Text('Failed to save recipe: $error')),
+        SnackBar(content: Text(context.t.recipes.failedToSave.replaceAll('{error}', error.toString()))),
       );
     }
   }
@@ -310,13 +311,13 @@ class _RecipePreviewCard extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: onSave,
                   icon: const Icon(Icons.save_alt),
-                  label: const Text('Save to library'),
+                  label: Text(context.t.recipes.saveToLibrary),
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: onView,
                   icon: const Icon(Icons.visibility_outlined),
-                  label: const Text('View details'),
+                  label: Text(context.t.recipes.viewDetails),
                 ),
               ],
             ),

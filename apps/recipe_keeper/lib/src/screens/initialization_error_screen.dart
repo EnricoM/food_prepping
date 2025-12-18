@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/strings.g.dart';
+
 class InitializationErrorScreen extends StatelessWidget {
   const InitializationErrorScreen({
     super.key,
@@ -31,7 +33,7 @@ class InitializationErrorScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Failed to Initialize App',
+                context.t.errors.initializationFailed,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -39,7 +41,7 @@ class InitializationErrorScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'The app encountered an error while loading your data. This can happen if data was corrupted during an update.',
+                context.t.errors.initializationDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
@@ -59,7 +61,7 @@ class InitializationErrorScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Error Details:',
+                      context.t.errors.errorDetails,
                       style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -76,7 +78,7 @@ class InitializationErrorScreen extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Try Again'),
+                label: Text(context.t.errors.tryAgain),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -90,14 +92,14 @@ class InitializationErrorScreen extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Clear All Data?'),
-                      content: const Text(
-                        'This will delete all your recipes, meal plans, shopping lists, and inventory. This action cannot be undone.',
+                      title: Text(context.t.errors.clearData + '?'),
+                      content: Text(
+                        context.t.errors.clearDataConfirm,
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
+                          child: Text(context.t.common.cancel),
                         ),
                         FilledButton(
                           onPressed: () {
@@ -108,14 +110,14 @@ class InitializationErrorScreen extends StatelessWidget {
                             backgroundColor: colorScheme.error,
                             foregroundColor: colorScheme.onError,
                           ),
-                          child: const Text('Clear Data'),
+                          child: Text(context.t.errors.clearData),
                         ),
                       ],
                     ),
                   );
                 },
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Clear All Data & Restart'),
+                label: Text(context.t.errors.clearDataAndRestart),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,

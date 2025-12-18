@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../i18n/strings.g.dart';
 import '../services/backup_service.dart';
 import '../services/measurement_preferences.dart';
 import '../widgets/back_aware_app_bar.dart';
@@ -47,10 +48,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Data exported successfully to:\n${file.path}'),
+            content: Text(t.settings.dataManagement.exportSuccess.replaceAll('{path}', file.path)),
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
-              label: 'OK',
+              label: t.common.ok,
               onPressed: () {},
             ),
           ),
@@ -60,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Failed to export data: $e'),
+            content: Text(t.settings.dataManagement.exportError.replaceAll('{error}', e.toString())),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -95,9 +96,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (mounted) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Data imported successfully!'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(t.settings.dataManagement.importSuccess),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -105,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Failed to import data: $e'),
+            content: Text(t.settings.dataManagement.importError.replaceAll('{error}', e.toString())),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 4),
           ),
@@ -122,21 +123,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final prefs = MeasurementPreferences.instance;
+    final t = context.t;
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('Settings')),
+      appBar: BackAwareAppBar(title: Text(t.settings.title)),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
           Text(
-            'Measurements',
+            t.settings.measurements.title,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            'Choose how ingredient units are displayed. Recipes using a different '
-            'system will be automatically converted to your preference.',
+            t.settings.measurements.description,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
@@ -159,11 +160,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           prefs.setSystem(value);
                         }
                       },
-                      title: Text(system.displayName),
+                      title: Text(
+                        system == MeasurementSystem.metric
+                            ? t.settings.measurements.metric.name
+                            : t.settings.measurements.imperial.name,
+                      ),
                       subtitle: Text(
                         system == MeasurementSystem.metric
-                            ? 'Ingredients show grams, kilograms, milliliters and liters.'
-                            : 'Ingredients show cups, tablespoons, teaspoons, ounces and pounds.',
+                            ? t.settings.measurements.metric.description
+                            : t.settings.measurements.imperial.description,
                       ),
                     ),
                   );
@@ -173,15 +178,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Data Management',
+            t.settings.dataManagement.title,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            'Export your recipes, meal plans, shopping list, and inventory to a JSON file. '
-            'You can import this file later to restore your data.',
+            t.settings.dataManagement.description,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
@@ -192,9 +196,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.file_download_outlined),
-                  title: const Text('Export Data'),
-                  subtitle: const Text(
-                    'Save all your data to a JSON file',
+                  title: Text(t.settings.dataManagement.exportData),
+                  subtitle: Text(
+                    t.settings.dataManagement.exportDataDescription,
                   ),
                   trailing: _isExporting
                       ? const SizedBox(
@@ -208,9 +212,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.file_upload_outlined),
-                  title: const Text('Import Data'),
-                  subtitle: const Text(
-                    'Restore data from a JSON backup file',
+                  title: Text(t.settings.dataManagement.importData),
+                  subtitle: Text(
+                    t.settings.dataManagement.importDataDescription,
                   ),
                   trailing: _isImporting
                       ? const SizedBox(
@@ -233,14 +237,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   if (_packageInfo != null) ...[
                     Text(
-                      'Version ${_packageInfo!.version} (Build ${_packageInfo!.buildNumber})',
+                      t.settings.version.format
+                          .replaceAll('{version}', _packageInfo!.version)
+                          .replaceAll('{buildNumber}', _packageInfo!.buildNumber),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Package: ${_packageInfo!.packageName}',
+                      t.settings.version.package.replaceAll('{packageName}', _packageInfo!.packageName),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         fontSize: 11,
@@ -248,7 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ] else
                     Text(
-                      'Loading version info...',
+                      t.settings.version.loading,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),

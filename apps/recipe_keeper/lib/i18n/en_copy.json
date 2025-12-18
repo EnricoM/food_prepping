@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name": "Recipe Keeper"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "done": "Done",
+    "close": "Close",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "settings": {
+    "title": "Settings",
+    "measurements": {
+      "title": "Measurements",
+      "description": "Choose how ingredient units are displayed. Recipes using a different system will be automatically converted to your preference.",
+      "metric": {
+        "name": "Metric",
+        "description": "Ingredients show grams, kilograms, milliliters and liters."
+      },
+      "imperial": {
+        "name": "Imperial",
+        "description": "Ingredients show cups, tablespoons, teaspoons, ounces and pounds."
+      }
+    },
+    "dataManagement": {
+      "title": "Data Management",
+      "description": "Export your recipes, meal plans, shopping list, and inventory to a JSON file. You can import this file later to restore your data.",
+      "exportData": "Export Data",
+      "exportDataDescription": "Save all your data to a JSON file",
+      "importData": "Import Data",
+      "importDataDescription": "Restore data from a JSON backup file",
+      "exportSuccess": "Data exported successfully to:\n{path}",
+      "exportError": "Failed to export data: {error}",
+      "importSuccess": "Data imported successfully!",
+      "importError": "Failed to import data: {error}"
+    },
+    "version": {
+      "loading": "Loading version info...",
+      "format": "Version {version} (Build {buildNumber})",
+      "package": "Package: {packageName}"
+    }
+  },
+  "recipes": {
+    "title": "Recipes",
+    "favorites": "Favorites",
+    "recentlyAdded": "Recently Added",
+    "stored": "Stored Recipes",
+    "add": "Add Recipe",
+    "edit": "Edit Recipe",
+    "delete": "Delete Recipe",
+    "deleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "noRecipes": "No recipes yet",
+    "addFirstRecipe": "Add your first recipe to get started",
+    "filter": "Filter",
+    "filtersUpdated": "Filters updated",
+    "editFilters": "Edit Filters",
+    "addToShoppingList": "Add ingredients to shopping list",
+    "ingredientsAdded": "Recipe ingredients added to shopping list.",
+    "addToFavorites": "Add to favourites",
+    "removeFromFavorites": "Remove favourite"
+  },
+  "recipeDetail": {
+    "overview": "Overview",
+    "ingredients": "Ingredients",
+    "preparation": "Preparation",
+    "scaleRecipe": "Scale Recipe",
+    "originalServings": "Original: {servings} servings",
+    "servings": "Servings",
+    "showingMeasurement": "Showing {system}",
+    "changeMeasurement": "Change",
+    "nutrition": {
+      "title": "Nutrition",
+      "calories": "Calories",
+      "caloriesPerServing": "{calories} kcal/serving",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "fiber": "Fiber",
+      "sugar": "Sugar",
+      "sodium": "Sodium",
+      "estimated": "Estimated nutrition values"
+    },
+    "highlights": "Highlights",
+    "prepAhead": {
+      "title": "Prep Ahead",
+      "description": "These steps can be done ahead of time to save you time on cooking day:"
+    },
+    "noInstructions": "Preparation steps were not provided for this recipe.",
+    "noIngredients": "No ingredients listed"
+  },
+  "filters": {
+    "continent": "Continent",
+    "country": "Country",
+    "diet": "Diet",
+    "course": "Course",
+    "none": "None"
+  },
+  "shoppingList": {
+    "title": "Shopping List",
+    "empty": "Your shopping list is empty",
+    "addItems": "Add items from recipes or scan barcodes",
+    "clearCompleted": "Clear Completed",
+    "clearAll": "Clear All"
+  },
+  "mealPlan": {
+    "title": "Meal Planner",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snack": "Snack"
+  },
+  "inventory": {
+    "title": "Inventory"
+  },
+  "errors": {
+    "initializationError": "Initialization Error",
+    "dataCorrupted": "The app's data appears to be corrupted and cannot be loaded.",
+    "retry": "Retry",
+    "clearData": "Clear All Data",
+    "clearDataConfirm": "This will permanently delete all your recipes, meal plans, shopping list, and inventory. This action cannot be undone.",
+    "clearDataSuccess": "All data has been cleared. The app will restart."
+  }
+}
+

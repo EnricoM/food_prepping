@@ -1,8 +1,11 @@
 import 'package:data/data.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:meal_planner/meal_planner.dart';
 import 'package:shared_ui/shared_ui.dart';
 import 'package:core/core.dart';
+
+import '../i18n/strings.g.dart';
 
 import 'navigation/app_drawer.dart';
 import 'screens/add_recipe_screen.dart';
@@ -45,8 +48,11 @@ class RecipeParserApp extends StatelessWidget {
       brightness: Brightness.light,
     );
 
-    return MaterialApp(
-      title: 'Recipe Keeper',
+    return TranslationProvider(
+      child: Builder(
+        builder: (context) {
+          return MaterialApp(
+            title: context.t.app.name,
       theme: ThemeData(
         colorScheme: colorScheme,
         useMaterial3: true,
@@ -137,6 +143,27 @@ class RecipeParserApp extends StatelessWidget {
           displayColor: const Color(0xFF1B4332),
         ),
       ),
+      // Localization configuration  
+      locale: Locale(
+        LocaleSettings.currentLocale.languageCode,
+        LocaleSettings.currentLocale.countryCode,
+      ),
+      supportedLocales: AppLocaleUtils.supportedLocales,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        // Try to find a matching locale
+        for (var locale in supportedLocales) {
+          if (locale.languageCode == deviceLocale?.languageCode) {
+            return locale;
+          }
+        }
+        // Default to English if device locale is not supported
+        return const Locale('en');
+      },
       initialRoute: _initialRoute,
       routes: {
         HomeScreen.routeName: (context) => _HomeScreenWrapper(
@@ -235,6 +262,9 @@ class RecipeParserApp extends StatelessWidget {
         }
         return null;
       },
+          );
+        },
+      ),
     );
   }
 

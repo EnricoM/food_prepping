@@ -5,6 +5,7 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'recipe_detail_screen.dart';
@@ -62,7 +63,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: const BackAwareAppBar(title: Text('Create manual recipe')),
+      appBar: BackAwareAppBar(title: Text(context.t.manualRecipe.title)),
       drawer: widget.drawer ??
           const AppDrawer(currentRoute: ManualRecipeScreen.routeName),
       body: SafeArea(
@@ -133,7 +134,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                Text('Ingredients', style: Theme.of(context).textTheme.titleMedium),
+                Text(context.t.manualRecipe.ingredients, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -151,7 +152,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
                     FilledButton.icon(
                       onPressed: _addIngredient,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add'),
+                      label: Text(context.t.manualRecipe.add),
                     ),
                   ],
                 ),
@@ -180,7 +181,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
                   ),
                 ],
                 const SizedBox(height: 24),
-                Text('Instructions',
+                Text(context.t.manualRecipe.instructions,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
                 ..._instructionControllers.asMap().entries.map(
@@ -221,11 +222,11 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
                   child: TextButton.icon(
                     onPressed: _addInstructionField,
                     icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Add step'),
+                    label: Text(context.t.manualRecipe.addStep),
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text('Categories',
+                Text(context.t.manualRecipe.categories,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Row(
@@ -244,7 +245,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
                     FilledButton.icon(
                       onPressed: _addCategory,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add'),
+                      label: Text(context.t.manualRecipe.add),
                     ),
                   ],
                 ),
@@ -271,7 +272,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
                 SwitchListTile.adaptive(
                   value: _isFavorite,
                   onChanged: (value) => setState(() => _isFavorite = value),
-                  title: const Text('Mark as favourite'),
+                  title: Text(context.t.manualRecipe.markAsFavourite),
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
@@ -351,7 +352,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
     }
     if (_ingredients.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one ingredient.')),
+        SnackBar(content: Text(context.t.manualRecipe.addIngredientRequired)),
       );
       return;
     }
@@ -361,7 +362,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
         .toList();
     if (instructions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one instruction step.')),
+        SnackBar(content: Text(context.t.manualRecipe.addIngredientRequired)),
       );
       return;
     }
@@ -406,7 +407,7 @@ class _ManualRecipeScreenState extends State<ManualRecipeScreen> {
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save recipe: $error')),
+        SnackBar(content: Text(context.t.recipes.failedToSave.replaceAll('{error}', error.toString()))),
       );
     } finally {
       if (mounted) {

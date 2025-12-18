@@ -3,6 +3,7 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
+import '../../i18n/strings.g.dart';
 import '../services/measurement_preferences.dart';
 import '../utils/ingredient_converter.dart';
 import '../utils/countries.dart';
@@ -49,12 +50,12 @@ class RecipeDetailScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Recipe'),
-        content: Text('Are you sure you want to delete "${entity.title}"? This action cannot be undone.'),
+        title: Text(context.t.recipes.delete),
+        content: Text(context.t.recipes.deleteConfirm.replaceAll('{title}', entity.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.t.common.cancel),
           ),
           FilledButton(
             onPressed: () async {
@@ -63,7 +64,7 @@ class RecipeDetailScreen extends StatelessWidget {
                 Navigator.of(context).pop(); // Close dialog
                 Navigator.of(context).pop(); // Go back to previous screen
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recipe deleted')),
+                  SnackBar(content: Text(context.t.recipes.recipeDeleted)),
                 );
               }
             },
@@ -71,7 +72,7 @@ class RecipeDetailScreen extends StatelessWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Delete'),
+            child: Text(context.t.common.delete),
           ),
         ],
       ),
@@ -101,8 +102,8 @@ class RecipeDetailScreen extends StatelessWidget {
                 await AppRepositories.instance.shoppingList
                     .addIngredientsFromRecipe(recipe);
                 messenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Recipe ingredients added to shopping list.'),
+                  SnackBar(
+                    content: Text(context.t.recipes.ingredientsAdded),
                   ),
                 );
               },
@@ -135,8 +136,8 @@ class RecipeDetailScreen extends StatelessWidget {
                     SnackBar(
                       content: Text(
                         becomingFavorite
-                            ? 'Added to favourites'
-                            : 'Removed from favourites',
+                            ? context.t.recipes.addToFavorites
+                            : context.t.recipes.removeFromFavorites,
                       ),
                     ),
                   );
@@ -152,23 +153,23 @@ class RecipeDetailScreen extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_outlined),
-                        SizedBox(width: 8),
-                        Text('Edit recipe'),
+                        const Icon(Icons.edit_outlined),
+                        const SizedBox(width: 8),
+                        Text(context.t.recipes.editRecipe),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Delete recipe', style: TextStyle(color: Colors.red)),
+                        const Icon(Icons.delete_outline, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Text(context.t.recipes.deleteRecipe, style: const TextStyle(color: Colors.red)),
                       ],
                     ),
                   ),
@@ -281,7 +282,7 @@ class _OverviewTab extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.shopping_cart_outlined),
-            label: const Text('Add ingredients to shopping list'),
+            label: Text(context.t.recipes.addToShoppingList),
           ),
           const SizedBox(height: 16),
           _NutritionCard(recipe: recipe, entity: entity),
@@ -292,7 +293,7 @@ class _OverviewTab extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Highlights', style: theme.textTheme.titleMedium),
+                  Text(context.t.recipeDetail.highlights, style: theme.textTheme.titleMedium),
                   const SizedBox(height: 12),
                   Text(ingredientsPreview(recipe)),
                 ],
@@ -510,7 +511,7 @@ class _IngredientsTabState extends State<_IngredientsTab> {
                         TextButton(
                           onPressed: () => Navigator.of(context)
                               .pushNamed(SettingsScreen.routeName),
-                          child: const Text('Change'),
+                          child: Text(context.t.recipeDetail.change),
                         ),
                       ],
                     ),
@@ -577,8 +578,8 @@ class _InstructionsTab extends StatelessWidget {
     final prepAheadSteps = _getPrepAheadSteps();
 
     if (instructions.isEmpty) {
-      return const Center(
-        child: Text('Preparation steps were not provided for this recipe.'),
+      return Center(
+        child: Text(context.t.recipeDetail.noInstructions),
       );
     }
 
