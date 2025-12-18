@@ -50,7 +50,12 @@
       "exportSuccess": "Gegevens succesvol geëxporteerd naar:\n{path}",
       "exportError": "Exporteren van gegevens mislukt: {error}",
       "importSuccess": "Gegevens succesvol geïmporteerd!",
-      "importError": "Kan gegevens niet importeren: {error}"
+      "importError": "Kan gegevens niet importeren: {error}",
+      "deleteAllRecipes": "Alle recepten verwijderen",
+      "deleteAllRecipesDescription": "Verwijder alle recepten permanent uit uw bibliotheek",
+      "deleteAllRecipesConfirm": "Weet u zeker dat u alle recepten wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "deleteAllRecipesSuccess": "Alle recepten zijn verwijderd.",
+      "deleteAllRecipesError": "Verwijderen van recepten mislukt: {error}"
     },
     "version": {
       "loading": "Loading version info...",

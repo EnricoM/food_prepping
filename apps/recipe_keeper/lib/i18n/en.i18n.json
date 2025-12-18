@@ -50,7 +50,12 @@
       "exportSuccess": "Data exported successfully to:\n{path}",
       "exportError": "Failed to export data: {error}",
       "importSuccess": "Data imported successfully!",
-      "importError": "Failed to import data: {error}"
+      "importError": "Failed to import data: {error}",
+      "deleteAllRecipes": "Delete All Recipes",
+      "deleteAllRecipesDescription": "Permanently remove all recipes from your library",
+      "deleteAllRecipesConfirm": "Are you sure you want to delete all recipes? This action cannot be undone.",
+      "deleteAllRecipesSuccess": "All recipes have been deleted.",
+      "deleteAllRecipesError": "Failed to delete recipes: {error}"
     },
     "version": {
       "loading": "Loading version info...",

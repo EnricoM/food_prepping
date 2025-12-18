@@ -500,6 +500,11 @@ class _TranslationsSettingsDataManagementNl extends TranslationsSettingsDataMana
 	@override String get exportError => 'Exporteren van gegevens mislukt: {error}';
 	@override String get importSuccess => 'Gegevens succesvol geïmporteerd!';
 	@override String get importError => 'Kan gegevens niet importeren: {error}';
+	@override String get deleteAllRecipes => 'Alle recepten verwijderen';
+	@override String get deleteAllRecipesDescription => 'Verwijder alle recepten permanent uit uw bibliotheek';
+	@override String get deleteAllRecipesConfirm => 'Weet u zeker dat u alle recepten wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.';
+	@override String get deleteAllRecipesSuccess => 'Alle recepten zijn verwijderd.';
+	@override String get deleteAllRecipesError => 'Verwijderen van recepten mislukt: {error}';
 }
 
 // Path: settings.version
@@ -612,6 +617,11 @@ extension on TranslationsNl {
 			'settings.dataManagement.exportError' => 'Exporteren van gegevens mislukt: {error}',
 			'settings.dataManagement.importSuccess' => 'Gegevens succesvol geïmporteerd!',
 			'settings.dataManagement.importError' => 'Kan gegevens niet importeren: {error}',
+			'settings.dataManagement.deleteAllRecipes' => 'Alle recepten verwijderen',
+			'settings.dataManagement.deleteAllRecipesDescription' => 'Verwijder alle recepten permanent uit uw bibliotheek',
+			'settings.dataManagement.deleteAllRecipesConfirm' => 'Weet u zeker dat u alle recepten wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
+			'settings.dataManagement.deleteAllRecipesSuccess' => 'Alle recepten zijn verwijderd.',
+			'settings.dataManagement.deleteAllRecipesError' => 'Verwijderen van recepten mislukt: {error}',
 			'settings.version.loading' => 'Loading version info...',
 			'settings.version.format' => 'Version {version} (Build {buildNumber})',
 			'settings.version.package' => 'Package: {packageName}',

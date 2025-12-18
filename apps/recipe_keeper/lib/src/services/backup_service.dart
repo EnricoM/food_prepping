@@ -265,7 +265,7 @@ class BackupService {
       'cookTime': recipe.cookTime?.inSeconds,
       'totalTime': recipe.totalTime?.inSeconds,
       'yield': recipe.yield,
-      'ingredients': recipe.ingredients,
+      'ingredients': recipe.ingredientStrings,
       'instructions': recipe.instructions,
       'metadata': recipe.metadata,
     };

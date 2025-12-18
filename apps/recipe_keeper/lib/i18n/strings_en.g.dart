@@ -957,6 +957,21 @@ class TranslationsSettingsDataManagementEn {
 
 	/// en: 'Failed to import data: {error}'
 	String get importError => 'Failed to import data: {error}';
+
+	/// en: 'Delete All Recipes'
+	String get deleteAllRecipes => 'Delete All Recipes';
+
+	/// en: 'Permanently remove all recipes from your library'
+	String get deleteAllRecipesDescription => 'Permanently remove all recipes from your library';
+
+	/// en: 'Are you sure you want to delete all recipes? This action cannot be undone.'
+	String get deleteAllRecipesConfirm => 'Are you sure you want to delete all recipes? This action cannot be undone.';
+
+	/// en: 'All recipes have been deleted.'
+	String get deleteAllRecipesSuccess => 'All recipes have been deleted.';
+
+	/// en: 'Failed to delete recipes: {error}'
+	String get deleteAllRecipesError => 'Failed to delete recipes: {error}';
 }
 
 // Path: settings.version
@@ -1107,6 +1122,11 @@ extension on Translations {
 			'settings.dataManagement.exportError' => 'Failed to export data: {error}',
 			'settings.dataManagement.importSuccess' => 'Data imported successfully!',
 			'settings.dataManagement.importError' => 'Failed to import data: {error}',
+			'settings.dataManagement.deleteAllRecipes' => 'Delete All Recipes',
+			'settings.dataManagement.deleteAllRecipesDescription' => 'Permanently remove all recipes from your library',
+			'settings.dataManagement.deleteAllRecipesConfirm' => 'Are you sure you want to delete all recipes? This action cannot be undone.',
+			'settings.dataManagement.deleteAllRecipesSuccess' => 'All recipes have been deleted.',
+			'settings.dataManagement.deleteAllRecipesError' => 'Failed to delete recipes: {error}',
 			'settings.version.loading' => 'Loading version info...',
 			'settings.version.format' => 'Version {version} (Build {buildNumber})',
 			'settings.version.package' => 'Package: {packageName}',

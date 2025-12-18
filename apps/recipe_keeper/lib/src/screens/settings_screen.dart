@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:data/data.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -21,6 +22,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isExporting = false;
   bool _isImporting = false;
+  bool _isDeletingRecipes = false;
   PackageInfo? _packageInfo;
 
   @override
@@ -115,6 +117,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } finally {
       if (mounted) {
         setState(() => _isImporting = false);
+      }
+    }
+  }
+
+  Future<void> _deleteAllRecipes() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.settings.dataManagement.deleteAllRecipes),
+        content: Text(t.settings.dataManagement.deleteAllRecipesConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(t.common.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(t.common.delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    if (!mounted) return;
+
+    setState(() => _isDeletingRecipes = true);
+
+    try {
+      await AppRepositories.instance.recipes.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(t.settings.dataManagement.deleteAllRecipesSuccess),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(t.settings.dataManagement.deleteAllRecipesError.replaceAll('{error}', e.toString())),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isDeletingRecipes = false);
       }
     }
   }
@@ -224,6 +284,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         )
                       : const Icon(Icons.chevron_right),
                   onTap: _isImporting ? null : _importData,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(
+                    Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    t.settings.dataManagement.deleteAllRecipes,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  subtitle: Text(
+                    t.settings.dataManagement.deleteAllRecipesDescription,
+                  ),
+                  trailing: _isDeletingRecipes
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.chevron_right),
+                  onTap: _isDeletingRecipes ? null : _deleteAllRecipes,
                 ),
               ],
             ),
