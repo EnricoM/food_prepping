@@ -149,12 +149,12 @@ class _AdBannerState extends State<AdBanner> with WidgetsBindingObserver {
 String _getAdUnitId() {
   switch (defaultTargetPlatform) {
     case TargetPlatform.android:
-      return 'ca-app-pub-5743498140441400/3104864428';
+      return 'ca-app-pub-5743498140441400/3391836047';
     case TargetPlatform.iOS:
       // TODO: Replace with real iOS ad unit ID when available
       return 'ca-app-pub-3940256099942544/2934735716';
     default:
-      return 'ca-app-pub-5743498140441400/3104864428';
+      return 'ca-app-pub-5743498140441400/3391836047';
   }
 }
 

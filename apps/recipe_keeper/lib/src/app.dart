@@ -1,4 +1,5 @@
 import 'package:data/data.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:meal_planner/meal_planner.dart';
@@ -51,8 +52,16 @@ class RecipeParserApp extends StatelessWidget {
     return TranslationProvider(
       child: Builder(
         builder: (context) {
+          // Use try-catch to handle cases where translations might not be loaded yet
+          String appTitle;
+          try {
+            appTitle = context.t.app.name;
+          } catch (e) {
+            debugPrint('Warning: Could not load app title translation: $e');
+            appTitle = 'Recipe Keeper';
+          }
           return MaterialApp(
-            title: context.t.app.name,
+            title: appTitle,
       theme: ThemeData(
         colorScheme: colorScheme,
         useMaterial3: true,

@@ -57,7 +57,7 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     _ingredientController = TextEditingController();
     _categoryController = TextEditingController();
     
-    _ingredients = List<String>.from(recipe.ingredients);
+    _ingredients = List<String>.from(recipe.ingredientStrings);
     _categories = List<String>.from(recipe.categories);
     _instructionControllers = recipe.instructions
         .map((instruction) => TextEditingController(text: instruction))
