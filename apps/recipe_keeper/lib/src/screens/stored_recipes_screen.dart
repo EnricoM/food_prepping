@@ -2,7 +2,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'favorites_screen.dart';
@@ -26,7 +25,7 @@ class StoredRecipesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.recipes.stored)),
+      appBar: BackAwareAppBar(title: const Text('Stored Recipes')),
       drawer: drawer ?? const AppDrawer(currentRoute: routeName),
       body: SafeArea(
         child: Padding(
@@ -48,7 +47,7 @@ class StoredRecipesScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          context.t.errors.errorLoadingRecipes,
+                          'Error loading recipes',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),

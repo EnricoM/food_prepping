@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:parsing/parsing.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import '../../features/recipes/presentation/widgets/network_image_with_fallback.dart';
@@ -65,7 +64,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     final inset = responsivePageInsets(context);
     return Scaffold(
       appBar: BackAwareAppBar(
-        title: Text(context.t.recipes.addRecipeFromUrl),
+        title: const Text('Add recipe from URL'),
       ),
       drawer:
           widget.drawer ?? const AppDrawer(currentRoute: AddRecipeScreen.routeName),
@@ -192,7 +191,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           : url;
       final entity = repositories.recipes.entityFor(key);
       scaffold.showSnackBar(
-        SnackBar(content: Text(context.t.recipes.recipeSaved)),
+        const SnackBar(content: Text('Recipe saved to your library.')),
       );
       widget.onRecipeSaved(
         context,
@@ -200,7 +199,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       );
     } catch (error) {
       scaffold.showSnackBar(
-        SnackBar(content: Text(context.t.recipes.failedToSave.replaceAll('{error}', error.toString()))),
+        SnackBar(content: Text('Failed to save recipe: $error')),
       );
     }
   }
@@ -311,13 +310,13 @@ class _RecipePreviewCard extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: onSave,
                   icon: const Icon(Icons.save_alt),
-                  label: Text(context.t.recipes.saveToLibrary),
+                  label: const Text('Save to library'),
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: onView,
                   icon: const Icon(Icons.visibility_outlined),
-                  label: Text(context.t.recipes.viewDetails),
+                  label: const Text('View details'),
                 ),
               ],
             ),

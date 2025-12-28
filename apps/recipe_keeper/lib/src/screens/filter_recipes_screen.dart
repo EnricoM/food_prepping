@@ -2,7 +2,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 
@@ -39,7 +38,7 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.recipes.filter)),
+      appBar: BackAwareAppBar(title: const Text('Filter')),
       drawer: widget.drawer ?? const AppDrawer(currentRoute: FilterRecipesScreen.routeName),
       body: SafeArea(
         child: CustomScrollView(
@@ -55,7 +54,7 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    labelText: context.t.filters.searchPlaceholder,
+                    labelText: 'Search by name or ingredient',
                     border: const OutlineInputBorder(),
                     suffixIcon: _searchController.text.isEmpty
                         ? const Icon(Icons.search)
@@ -207,7 +206,7 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
                               });
                             },
                             icon: const Icon(Icons.clear_all),
-                            label: Text(context.t.filters.clearAll),
+                            label: const Text('Clear all filters'),
                           ),
                         ],
                       ],
@@ -289,7 +288,7 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
                     child: Padding(
                       padding: EdgeInsets.only(top: inset.bottom + 32),
                       child: Center(
-                        child: Text(context.t.filters.noMatch),
+                        child: const Text('No recipes match your filters yet.'),
                       ),
                     ),
                   );
@@ -341,7 +340,7 @@ class _FilterRecipesScreenState extends State<FilterRecipesScreen> {
       items: [
         DropdownMenuItem<String>(
           value: null,
-          child: Text(context.t.filters.all),
+          child: const Text('All'),
         ),
         ...items.map(
           (item) => DropdownMenuItem<String>(

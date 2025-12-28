@@ -2,7 +2,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import 'domain_discovery_screen.dart';
 import '../widgets/back_aware_app_bar.dart';
@@ -18,7 +17,7 @@ class VisitedDomainsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.visitedDomains.title)),
+      appBar: BackAwareAppBar(title: const Text('Visited Domains')),
       drawer: drawer ?? const AppDrawer(currentRoute: VisitedDomainsScreen.routeName),
       body: SafeArea(
         child: StreamBuilder<List<ImportedUrlEntity>>(
@@ -33,7 +32,7 @@ class VisitedDomainsScreen extends StatelessWidget {
               return Center(
                 child: Padding(
                   padding: inset,
-                  child: Text(context.t.visitedDomains.noDomains),
+                  child: const Text('No domains visited yet.'),
                 ),
               );
             }
@@ -74,9 +73,7 @@ class VisitedDomainsScreen extends StatelessWidget {
                     leading: const Icon(Icons.public),
                     title: Text(domain),
                     subtitle: Text(
-                      context.t.visitedDomains.pagesImported
-                          .replaceAll('{count}', count.toString())
-                          .replaceAll('{s}', count == 1 ? '' : 's'),
+                      '${count} page${count == 1 ? '' : 's'} imported',
                     ),
                     children: [
                       Padding(
@@ -87,7 +84,7 @@ class VisitedDomainsScreen extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  context.t.visitedDomains.lastImport.replaceAll('{date}', _formatDate(latestImport)),
+                                  'Last import: ${_formatDate(latestImport)}',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                                 const Spacer(),
@@ -98,7 +95,7 @@ class VisitedDomainsScreen extends StatelessWidget {
                                     arguments: domain,
                                   ),
                                   icon: const Icon(Icons.refresh),
-                                  label: Text(context.t.visitedDomains.scanForNew),
+                                  label: const Text('Scan for new recipes'),
                                 ),
                               ],
                             ),

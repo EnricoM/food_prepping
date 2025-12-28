@@ -2,7 +2,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'recipe_detail_screen.dart';
@@ -18,7 +17,7 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.inventorySuggestions.title)),
+      appBar: BackAwareAppBar(title: const Text('What Can I Make?')),
       drawer: drawer ?? const AppDrawer(currentRoute: InventoryRecipeSuggestionsScreen.routeName),
       body: SafeArea(
         child: StreamBuilder<List<InventoryItem>>(
@@ -53,14 +52,14 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        context.t.inventorySuggestions.noItems,
+                        'No items in inventory',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        context.t.inventorySuggestions.addItemsDescription,
+                        'Add items to your inventory to see recipe suggestions.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
@@ -92,7 +91,7 @@ class InventoryRecipeSuggestionsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            context.t.inventorySuggestions.errorLoading,
+                            'Error loading recipes',
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),

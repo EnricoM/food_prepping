@@ -6,7 +6,6 @@ import 'package:meal_planner/meal_planner.dart';
 import 'package:shared_ui/shared_ui.dart';
 import 'package:core/core.dart';
 
-import '../i18n/strings.g.dart';
 
 import 'navigation/app_drawer.dart';
 import 'screens/add_recipe_screen.dart';
@@ -49,19 +48,8 @@ class RecipeParserApp extends StatelessWidget {
       brightness: Brightness.light,
     );
 
-    return TranslationProvider(
-      child: Builder(
-        builder: (context) {
-          // Use try-catch to handle cases where translations might not be loaded yet
-          String appTitle;
-          try {
-            appTitle = context.t.app.name;
-          } catch (e) {
-            debugPrint('Warning: Could not load app title translation: $e');
-            appTitle = 'Recipe Keeper';
-          }
-          return MaterialApp(
-            title: appTitle,
+    return MaterialApp(
+            title: 'Recipe Keeper',
       theme: ThemeData(
         colorScheme: colorScheme,
         useMaterial3: true,
@@ -153,11 +141,8 @@ class RecipeParserApp extends StatelessWidget {
         ),
       ),
       // Localization configuration  
-      locale: Locale(
-        LocaleSettings.currentLocale.languageCode,
-        LocaleSettings.currentLocale.countryCode,
-      ),
-      supportedLocales: AppLocaleUtils.supportedLocales,
+      locale: const Locale('en'),
+      supportedLocales: const [Locale('en')],
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -272,9 +257,6 @@ class RecipeParserApp extends StatelessWidget {
         return null;
       },
           );
-        },
-      ),
-    );
   }
 
   static void _pushRoute(BuildContext context, String route) {

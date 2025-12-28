@@ -2,7 +2,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'widgets/recipe_tile.dart';
@@ -23,7 +22,7 @@ class FavoritesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.recipes.favorites)),
+      appBar: BackAwareAppBar(title: const Text('Favorites')),
       drawer: drawer ?? const AppDrawer(currentRoute: routeName),
       body: SafeArea(
         child: Padding(
@@ -45,7 +44,7 @@ class FavoritesScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          context.t.errors.errorLoadingFavorites,
+                          'Error loading favorites',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -81,7 +80,7 @@ class FavoritesScreen extends StatelessWidget {
                 );
               if (favourites.isEmpty) {
                 return Center(
-                  child: Text(context.t.recipes.favoritesEmpty),
+                  child: const Text('Mark recipes as favourites to see them here.'),
                 );
               }
               return ListView.separated(

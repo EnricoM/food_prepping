@@ -7,7 +7,6 @@ import 'package:shared_ui/shared_ui.dart';
 import 'package:core/core.dart';
 import 'package:data/data.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import '../widgets/ad_banner.dart';
@@ -101,7 +100,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
     final hasSelection = _selectedUrls.isNotEmpty;
     return Scaffold(
       appBar:
-          BackAwareAppBar(title: Text(context.t.domainDiscovery.title)),
+          BackAwareAppBar(title: const Text('Discover recipes by domain')),
       drawer:
           widget.drawer ??
           const AppDrawer(currentRoute: DomainDiscoveryScreen.routeName),
@@ -214,7 +213,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                             });
                           },
                     icon: const Icon(Icons.done_all),
-                    label: Text(context.t.domainDiscovery.selectAll),
+                    label: const Text('Select all'),
                   ),
                   OutlinedButton.icon(
                     onPressed: hasSelection
@@ -223,7 +222,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                           }
                         : null,
                     icon: const Icon(Icons.clear_all),
-                    label: Text(context.t.domainDiscovery.clearSelection),
+                    label: const Text('Clear selection'),
                   ),
                   FilledButton.icon(
                     onPressed:
@@ -266,7 +265,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                         });
                       },
                       title: Text(url.toString()),
-                      subtitle: Text(context.t.domainDiscovery.tapToParse),
+                      subtitle: const Text('Tap the icon to parse now'),
                       secondary: IconButton(
                         icon: const Icon(Icons.open_in_new),
                         tooltip: 'Open in parser',
@@ -296,7 +295,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
                         (entry) => ListTile(
                           title: Text(entry.url.toString()),
                           subtitle: entry.error == null
-                              ? Text(context.t.domainDiscovery.noRecipeStructure)
+                              ? const Text('No recipe structure found.')
                               : Text(entry.error!),
                         ),
                       )
@@ -405,9 +404,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
       if (skippedCount > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.t.domainDiscovery.skippedImported
-                .replaceAll('{count}', skippedCount.toString())
-                .replaceAll('{s}', skippedCount == 1 ? '' : 's')),
+            content: Text('Skipped ${skippedCount} already imported page${skippedCount == 1 ? '' : 's'}.'),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -537,9 +534,7 @@ class _DomainDiscoveryScreenState extends State<DomainDiscoveryScreen> {
     if (successCount > 0) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(context.t.domainDiscovery.savedRecipes
-              .replaceAll('{count}', successCount.toString())
-              .replaceAll('{s}', successCount == 1 ? '' : 's')),
+          content: Text('Saved ${successCount} recipe${successCount == 1 ? '' : 's'} to your library.'),
         ),
       );
     }

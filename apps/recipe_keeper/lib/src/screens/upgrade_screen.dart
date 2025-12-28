@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../i18n/strings.g.dart';
 import '../services/subscription_service.dart';
 import '../widgets/back_aware_app_bar.dart';
 
@@ -12,45 +11,45 @@ class UpgradeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.upgrade.title)),
+      appBar: BackAwareAppBar(title: const Text('Go Premium')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              context.t.upgrade.tagline,
+              'Cook smarter. No ads. Unlimited scans.',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              context.t.upgrade.description,
+              'Upgrade to unlock unlimited domain scans, remove ads, and enable smart conversions, translation, planning, and exports.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 20),
-            _Bullet(icon: Icons.speed, text: context.t.upgrade.unlimitedScans),
-            _Bullet(icon: Icons.block, text: context.t.upgrade.noAds),
-            _Bullet(icon: Icons.straighten, text: context.t.upgrade.smartConversions),
-            _Bullet(icon: Icons.event_note, text: context.t.upgrade.mealPlanner),
+            const _Bullet(icon: Icons.speed, text: 'Unlimited scans & faster discovery'),
+            const _Bullet(icon: Icons.block, text: 'No ads'),
+            const _Bullet(icon: Icons.straighten, text: 'Smart conversions + translate'),
+            const _Bullet(icon: Icons.event_note, text: 'Meal planner & PDF export'),
             const Spacer(),
             FilledButton(
               onPressed: () {
                 SubscriptionService.instance.setPremium(true);
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(context.t.upgrade.premiumUnlocked)),
+                  const SnackBar(content: Text('Premium unlocked')),
                 );
               },
-              child: Text(context.t.upgrade.startTrial),
+              child: const Text('Start 7‑day free trial'),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(context.t.upgrade.continueFree),
+              child: const Text('Continue with Free'),
             ),
           ],
         ),

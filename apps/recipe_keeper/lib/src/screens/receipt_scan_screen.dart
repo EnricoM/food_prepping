@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../widgets/back_aware_app_bar.dart';
 
 enum ReceiptScanTarget { inventory, shoppingList }
@@ -41,11 +40,11 @@ class _ReceiptScanScreenState extends State<ReceiptScanScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     final title = widget.target == ReceiptScanTarget.inventory
-        ? context.t.receiptScan.scanToInventory
-        : context.t.receiptScan.scanToShoppingList;
+        ? 'Scan receipt to add to inventory'
+        : 'Scan receipt to add to shopping list';
 
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.receiptScan.title)),
+      appBar: BackAwareAppBar(title: const Text('Receipt scanner')),
       body: SafeArea(
         child: Padding(
           padding: inset,
@@ -55,7 +54,7 @@ class _ReceiptScanScreenState extends State<ReceiptScanScreen> {
               Text(title, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 12),
               Text(
-                context.t.receiptScan.description,
+                'Snap a clear photo of your grocery receipt or import an image. We will detect items and let you confirm before saving.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 20),
@@ -66,18 +65,18 @@ class _ReceiptScanScreenState extends State<ReceiptScanScreen> {
                   FilledButton.icon(
                     onPressed: _isLoading ? null : _capturePhoto,
                     icon: const Icon(Icons.photo_camera_outlined),
-                    label: Text(context.t.receiptScan.capturePhoto),
+                    label: const Text('Capture photo'),
                   ),
                   OutlinedButton.icon(
                     onPressed: _isLoading ? null : _pickFromGallery,
                     icon: const Icon(Icons.photo_library_outlined),
-                    label: Text(context.t.receiptScan.pickFromGallery),
+                    label: const Text('Pick from gallery'),
                   ),
                   if (_image != null)
                     OutlinedButton.icon(
                       onPressed: _isLoading ? null : _clearImage,
                       icon: const Icon(Icons.delete_outline),
-                      label: Text(context.t.receiptScan.clearSelection),
+                      label: const Text('Clear selection'),
                     ),
                 ],
               ),
@@ -259,7 +258,7 @@ class _ReceiptScanScreenState extends State<ReceiptScanScreen> {
         .toList();
     if (selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.t.receiptScan.selectAtLeastOne)),
+        const SnackBar(content: Text('Please select at least one item.')),
       );
       return;
     }

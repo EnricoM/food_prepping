@@ -5,7 +5,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'recipe_detail_screen.dart';
 
@@ -87,7 +86,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.recipeEdit.title)),
+      appBar: BackAwareAppBar(title: const Text('Edit recipe')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: inset,
@@ -156,7 +155,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                Text(context.t.recipeEdit.ingredients, style: Theme.of(context).textTheme.titleMedium),
+                const Text('Ingredients', style: TextStyle()),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -174,7 +173,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                     FilledButton.icon(
                       onPressed: _addIngredient,
                       icon: const Icon(Icons.add),
-                      label: Text(context.t.recipeEdit.add),
+                      label: const Text('Add'),
                     ),
                   ],
                 ),
@@ -198,7 +197,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   ),
                 ],
                 const SizedBox(height: 24),
-                Text(context.t.recipeEdit.instructions,
+                Text('Instructions',
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
                 ..._instructionControllers.asMap().entries.map(
@@ -239,11 +238,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   child: TextButton.icon(
                     onPressed: _addInstructionField,
                     icon: const Icon(Icons.add_circle_outline),
-                    label: Text(context.t.recipeEdit.addStep),
+                    label: const Text('Add step'),
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(context.t.recipeEdit.categories,
+                Text('Categories',
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Row(
@@ -262,7 +261,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                     FilledButton.icon(
                       onPressed: _addCategory,
                       icon: const Icon(Icons.add),
-                      label: Text(context.t.recipeEdit.add),
+                      label: const Text('Add'),
                     ),
                   ],
                 ),
@@ -353,7 +352,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     }
     if (_ingredients.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.t.recipeEdit.addIngredientRequired)),
+        const SnackBar(content: Text('Add at least one ingredient.')),
       );
       return;
     }
@@ -363,7 +362,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         .toList();
     if (instructions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.t.recipeEdit.addInstructionRequired)),
+        const SnackBar(content: Text('Add at least one instruction step.')),
       );
       return;
     }
@@ -384,7 +383,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.t.common.success)),
+        const SnackBar(content: Text('Success')),
       );
       Navigator.of(context).pop();
       // Refresh the detail screen by popping and pushing again
@@ -400,7 +399,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.t.recipes.failedToSave.replaceAll('{error}', error.toString()))),
+        SnackBar(content: Text('Failed to save recipe: $error')),
       );
     } finally {
       if (mounted) {

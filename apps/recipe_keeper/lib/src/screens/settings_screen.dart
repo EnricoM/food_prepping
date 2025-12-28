@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../i18n/strings.g.dart';
 import '../services/backup_service.dart';
 import '../services/measurement_preferences.dart';
 import '../widgets/back_aware_app_bar.dart';
@@ -50,10 +49,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(t.settings.dataManagement.exportSuccess.replaceAll('{path}', file.path)),
+            content: Text('Data exported successfully to:\n${file.path}'),
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
-              label: t.common.ok,
+              label: 'OK',
               onPressed: () {},
             ),
           ),
@@ -63,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(t.settings.dataManagement.exportError.replaceAll('{error}', e.toString())),
+            content: Text('Failed to export data: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -99,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(t.settings.dataManagement.importSuccess),
+            content: const Text('Data imported successfully!'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -108,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(t.settings.dataManagement.importError.replaceAll('{error}', e.toString())),
+            content: Text('Failed to import data: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 4),
           ),
@@ -125,19 +124,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(t.settings.dataManagement.deleteAllRecipes),
-        content: Text(t.settings.dataManagement.deleteAllRecipesConfirm),
+        title: const Text('Delete All Recipes'),
+        content: const Text('Are you sure you want to delete all recipes? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t.common.cancel),
+            child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: Text(t.common.delete),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -157,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(t.settings.dataManagement.deleteAllRecipesSuccess),
+            content: const Text('All recipes have been deleted.'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -166,7 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(t.settings.dataManagement.deleteAllRecipesError.replaceAll('{error}', e.toString())),
+            content: Text('Failed to delete recipes: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 4),
           ),
@@ -183,21 +182,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final prefs = MeasurementPreferences.instance;
-    final t = context.t;
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(t.settings.title)),
+      appBar: BackAwareAppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
           Text(
-            t.settings.measurements.title,
+            'Measurements',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            t.settings.measurements.description,
+            'Choose how ingredient units are displayed. Recipes using a different system will be automatically converted to your preference.',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
@@ -222,13 +220,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                       title: Text(
                         system == MeasurementSystem.metric
-                            ? t.settings.measurements.metric.name
-                            : t.settings.measurements.imperial.name,
+                            ? 'Metric (grams & milliliters)'
+                            : 'US Customary (cups & ounces)',
                       ),
                       subtitle: Text(
                         system == MeasurementSystem.metric
-                            ? t.settings.measurements.metric.description
-                            : t.settings.measurements.imperial.description,
+                            ? 'Ingredients show grams, kilograms, milliliters and liters.'
+                            : 'Ingredients show cups, tablespoons, teaspoons, ounces and pounds.',
                       ),
                     ),
                   );
@@ -238,14 +236,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 32),
           Text(
-            t.settings.dataManagement.title,
+            'Data Management',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            t.settings.dataManagement.description,
+            'Export your recipes, meal plans, shopping list, and inventory to a JSON file. You can import this file later to restore your data.',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
@@ -256,9 +254,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.file_download_outlined),
-                  title: Text(t.settings.dataManagement.exportData),
-                  subtitle: Text(
-                    t.settings.dataManagement.exportDataDescription,
+                  title: const Text('Export Data'),
+                  subtitle: const Text(
+                    'Save all your data to a JSON file',
                   ),
                   trailing: _isExporting
                       ? const SizedBox(
@@ -272,9 +270,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.file_upload_outlined),
-                  title: Text(t.settings.dataManagement.importData),
-                  subtitle: Text(
-                    t.settings.dataManagement.importDataDescription,
+                  title: const Text('Import Data'),
+                  subtitle: const Text(
+                    'Restore data from a JSON backup file',
                   ),
                   trailing: _isImporting
                       ? const SizedBox(
@@ -292,13 +290,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Theme.of(context).colorScheme.error,
                   ),
                   title: Text(
-                    t.settings.dataManagement.deleteAllRecipes,
+                    'Delete All Recipes',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
                     ),
                   ),
                   subtitle: Text(
-                    t.settings.dataManagement.deleteAllRecipesDescription,
+                    'Permanently remove all recipes from your library',
                   ),
                   trailing: _isDeletingRecipes
                       ? const SizedBox(
@@ -321,16 +319,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   if (_packageInfo != null) ...[
                     Text(
-                      t.settings.version.format
-                          .replaceAll('{version}', _packageInfo!.version)
-                          .replaceAll('{buildNumber}', _packageInfo!.buildNumber),
+                      'Version ${_packageInfo!.version} (Build ${_packageInfo!.buildNumber})',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      t.settings.version.package.replaceAll('{packageName}', _packageInfo!.packageName),
+                      'Package: ${_packageInfo!.packageName}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         fontSize: 11,
@@ -338,7 +334,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ] else
                     Text(
-                      t.settings.version.loading,
+                      'Loading version info...',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),

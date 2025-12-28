@@ -2,7 +2,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'widgets/recipe_tile.dart';
@@ -23,7 +22,7 @@ class RecentlyAddedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final inset = responsivePageInsets(context);
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.recipes.recentlyAdded)),
+      appBar: BackAwareAppBar(title: const Text('Recently Added')),
       drawer: drawer ?? const AppDrawer(currentRoute: routeName),
       body: SafeArea(
         child: Padding(
@@ -45,7 +44,7 @@ class RecentlyAddedScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          context.t.errors.errorLoadingRecipes,
+                          'Error loading recipes',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -79,7 +78,7 @@ class RecentlyAddedScreen extends StatelessWidget {
               final topTen = recent.take(10).toList();
               if (topTen.isEmpty) {
                 return Center(
-                  child: Text(context.t.recipes.addFirstRecipe),
+                  child: const Text('Add your first recipe to get started'),
                 );
               }
               return ListView.separated(

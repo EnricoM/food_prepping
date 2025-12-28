@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:meal_planner/meal_planner.dart';
 
-import '../../i18n/strings.g.dart';
 import '../services/tour_service.dart';
 import '../services/tour_progress.dart';
 import '../navigation/app_drawer.dart';
@@ -555,7 +554,7 @@ class _EnhancedTourScreenState extends State<EnhancedTourScreen> {
     final progress = TourProgress.instance;
 
     return Scaffold(
-      appBar: BackAwareAppBar(title: Text(context.t.tour.title)),
+      appBar: BackAwareAppBar(title: const Text('App Tour')),
       drawer: const AppDrawer(currentRoute: EnhancedTourScreen.routeName),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -627,8 +626,8 @@ class _EnhancedTourScreenState extends State<EnhancedTourScreen> {
                         },
                       ),
                       SwitchListTile(
-                        title: Text(context.t.tour.quickTipsMode),
-                        subtitle: Text(context.t.tour.quickTipsDescription),
+                        title: const Text('Quick tips mode'),
+                        subtitle: const Text('Show condensed instructions'),
                         value: progress.quickTipsMode,
                         onChanged: (value) {
                           TourProgress.instance.setQuickTipsMode(value);
@@ -708,7 +707,7 @@ class _EnhancedTourScreenState extends State<EnhancedTourScreen> {
               FilledButton.icon(
                 onPressed: _startTour,
                 icon: const Icon(Icons.play_arrow),
-                label: Text(context.t.tour.startCompleteTour),
+                label: const Text('Start Complete Tour'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -941,16 +940,16 @@ class _EnhancedTourStepDialog extends StatelessWidget {
           TextButton.icon(
             onPressed: onBack,
             icon: const Icon(Icons.arrow_back),
-            label: Text(context.t.tour.back),
+            label: const Text('Back'),
           ),
         if (canSkipScenario)
           TextButton(
             onPressed: onSkip,
-            child: Text(context.t.tour.skipScenario),
+            child: const Text('Skip Scenario'),
           ),
         TextButton(
           onPressed: onSkip,
-          child: Text(context.t.tour.skip),
+          child: const Text('Skip'),
         ),
         FilledButton(
           onPressed: onNext,

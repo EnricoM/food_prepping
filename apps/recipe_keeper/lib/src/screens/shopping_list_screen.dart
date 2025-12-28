@@ -2,7 +2,6 @@ import 'package:data/data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-import '../../i18n/strings.g.dart';
 import '../navigation/app_drawer.dart';
 import '../widgets/back_aware_app_bar.dart';
 import 'barcode_scan_screen.dart';
@@ -31,7 +30,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     final inset = responsivePageInsets(context);
     return Scaffold(
       appBar: BackAwareAppBar(
-        title: Text(context.t.shoppingList.title),
+        title: const Text('Shopping List'),
         actions: const [_ShoppingListMenu()],
       ),
       drawer: const AppDrawer(currentRoute: ShoppingListScreen.routeName),
@@ -71,7 +70,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                               ),
                               const SizedBox(height: 24),
                               Text(
-                                context.t.shoppingList.errorLoading,
+                                'Error loading shopping list',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -175,19 +174,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.add_outlined),
-              title: Text(context.t.shoppingList.addManualItem),
+              title: const Text('Add manual item'),
               onTap: () =>
                   Navigator.of(sheetContext).pop(_AddMenuAction.manual),
             ),
             ListTile(
               leading: const Icon(Icons.receipt_long_outlined),
-              title: Text(context.t.shoppingList.scanReceipt),
+              title: const Text('Scan receipt (batch add)'),
               onTap: () =>
                   Navigator.of(sheetContext).pop(_AddMenuAction.receipt),
             ),
             ListTile(
               leading: const Icon(Icons.qr_code_scanner),
-              title: Text(context.t.shoppingList.scanBarcode),
+              title: const Text('Scan barcode'),
               onTap: () =>
                   Navigator.of(sheetContext).pop(_AddMenuAction.barcode),
             ),
@@ -205,18 +204,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             builder: (dialogCtx) {
               final controller = TextEditingController();
               return AlertDialog(
-                title: Text(context.t.shoppingList.addItem),
+                title: const Text('Add item'),
                 content: TextField(
                   controller: controller,
                   decoration: InputDecoration(
-                    labelText: context.t.shoppingList.itemName,
+                    labelText: 'Item name',
                   ),
                   autofocus: true,
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogCtx).pop(),
-                    child: Text(context.t.common.cancel),
+                    child: const Text('Cancel'),
                   ),
                   FilledButton(
                     onPressed: () async {
@@ -229,7 +228,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                       if (!dialogCtx.mounted) return;
                       Navigator.of(dialogCtx).pop();
                     },
-                    child: Text(context.t.common.save),
+                    child: const Text('Save'),
                   ),
                 ],
               );
@@ -272,13 +271,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       );
       await AppRepositories.instance.shoppingList.remove(item);
       messenger.showSnackBar(
-        SnackBar(content: Text(context.t.shoppingList.addedToInventory.replaceAll('{name}', result.name))),
+        SnackBar(content: Text('Added ${result.name} to inventory.')),
       );
     } else if (result == _PostCheckAction.remove) {
       await AppRepositories.instance.shoppingList.remove(item);
       messenger.showSnackBar(
         SnackBar(
-          content: Text(context.t.shoppingList.removedFromList.replaceAll('{ingredient}', item.ingredient)),
+          content: Text('Removed "${item.ingredient}" from the list.'),
         ),
       );
     } else if (result == _PostCheckAction.undo) {
@@ -307,14 +306,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                context.t.shoppingList.addToInventory,
+                'Add to inventory?',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
-                  labelText: context.t.shoppingList.itemName,
+                  labelText: 'Item name',
                   border: const OutlineInputBorder(),
                 ),
               ),
@@ -328,7 +327,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                         decimal: true,
                       ),
                       decoration: InputDecoration(
-                        labelText: context.t.shoppingList.quantity,
+                        labelText: 'Quantity',
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -338,7 +337,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     child: TextField(
                       controller: unitController,
                       decoration: InputDecoration(
-                        labelText: context.t.shoppingList.unitOptional,
+                        labelText: 'Unit (optional)',
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -370,24 +369,24 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   );
                 },
                 icon: const Icon(Icons.inventory_2_outlined),
-                label: Text(context.t.shoppingList.addToInventoryAndRemove),
+                label: const Text('Add to inventory & remove'),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(sheetContext)
                     .pop(_PostCheckAction.remove),
                 icon: const Icon(Icons.remove_circle_outline),
-                label: Text(context.t.shoppingList.removeFromList),
+                label: const Text('Remove from list'),
               ),
               TextButton(
                 onPressed: () =>
                     Navigator.of(sheetContext).pop(_PostCheckAction.keep),
-                child: Text(context.t.shoppingList.keepChecked),
+                child: const Text('Keep checked'),
               ),
               TextButton(
                 onPressed: () =>
                     Navigator.of(sheetContext).pop(_PostCheckAction.undo),
-                child: Text(context.t.shoppingList.undoCheck),
+                child: const Text('Undo check'),
               ),
             ],
           ),
@@ -510,7 +509,7 @@ class _OrganizationControls extends StatelessWidget {
                 Icon(Icons.tune, size: 20, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  context.t.shoppingList.organization,
+                  'Organization',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -525,7 +524,7 @@ class _OrganizationControls extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context.t.shoppingList.groupBy,
+                        'Group by',
                         style: theme.textTheme.labelSmall,
                       ),
                       const SizedBox(height: 4),
@@ -533,23 +532,23 @@ class _OrganizationControls extends StatelessWidget {
                         segments: [
                           ButtonSegment(
                             value: _GroupBy.none,
-                            label: Text(context.t.shoppingList.groupNone),
-                            tooltip: context.t.shoppingList.groupNoneTooltip,
+                            label: const Text('None'),
+                            tooltip: 'No grouping',
                           ),
                           ButtonSegment(
                             value: _GroupBy.category,
-                            label: Text(context.t.shoppingList.groupCategory),
-                            tooltip: context.t.shoppingList.groupCategoryTooltip,
+                            label: const Text('Category'),
+                            tooltip: 'Group by store category',
                           ),
                           ButtonSegment(
                             value: _GroupBy.recipe,
-                            label: Text(context.t.shoppingList.groupRecipe),
-                            tooltip: context.t.shoppingList.groupRecipeTooltip,
+                            label: const Text('Recipe'),
+                            tooltip: 'Group by recipe',
                           ),
                           ButtonSegment(
                             value: _GroupBy.storeLayout,
-                            label: Text(context.t.shoppingList.groupStore),
-                            tooltip: context.t.shoppingList.groupStoreTooltip,
+                            label: const Text('Store'),
+                            tooltip: 'Group by store layout',
                           ),
                         ],
                         selected: {groupBy},
@@ -578,7 +577,7 @@ class _OrganizationControls extends StatelessWidget {
                           onTap: () =>
                               onMergeDuplicatesChanged(!mergeDuplicates),
                           child: Text(
-                            context.t.shoppingList.mergeDuplicates,
+                            'Merge duplicates',
                             style: theme.textTheme.bodySmall,
                           ),
                         ),
@@ -607,13 +606,13 @@ class _ShoppingListMenu extends StatelessWidget {
           case _ShoppingMenuAction.clearChecked:
             await AppRepositories.instance.shoppingList.clearCompleted();
             messenger.showSnackBar(
-              SnackBar(content: Text(context.t.shoppingList.clearedChecked)),
+              const SnackBar(content: Text('Cleared checked items.')),
             );
             break;
           case _ShoppingMenuAction.clearAll:
             await AppRepositories.instance.shoppingList.clearAll();
             messenger.showSnackBar(
-              SnackBar(content: Text(context.t.shoppingList.clearedAll)),
+              const SnackBar(content: Text('Shopping list cleared.')),
             );
             break;
         }
@@ -621,11 +620,11 @@ class _ShoppingListMenu extends StatelessWidget {
       itemBuilder: (context) => [
         PopupMenuItem<_ShoppingMenuAction>(
           value: _ShoppingMenuAction.clearChecked,
-          child: Text(context.t.shoppingList.clearChecked),
+          child: const Text('Clear checked items'),
         ),
         PopupMenuItem<_ShoppingMenuAction>(
           value: _ShoppingMenuAction.clearAll,
-          child: Text(context.t.shoppingList.clearAllItems),
+          child: const Text('Clear all items'),
         ),
       ],
     );
@@ -668,7 +667,7 @@ class _CategoryGroupedView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              context.t.shoppingList.completed,
+              'Completed',
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
@@ -781,7 +780,7 @@ class _RecipeGroupedView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              context.t.shoppingList.completed,
+              'Completed',
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
@@ -914,7 +913,7 @@ class _SimpleListView extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              context.t.shoppingList.completed,
+              'Completed',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context)
                         .colorScheme
@@ -946,9 +945,9 @@ class _EmptyState extends StatelessWidget {
         children: [
           const Icon(Icons.shopping_bag_outlined, size: 48, color: Colors.black26),
           const SizedBox(height: 12),
-          Text(context.t.shoppingList.empty),
+          const Text('Your shopping list is empty'),
           const SizedBox(height: 8),
-          Text(context.t.shoppingList.emptyDescription),
+          const Text('Add ingredients from the meal planner or recipe details.'),
         ],
       ),
     );
