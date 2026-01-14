@@ -249,7 +249,7 @@ class _RecipeParserAppState extends State<RecipeParserApp> {
         // Default to English if device locale is not supported
         return const Locale('en');
       },
-      initialRoute: _initialRoute,
+      initialRoute: RecipeParserApp._initialRoute,
       routes: {
         HomeScreen.routeName: (context) => _HomeScreenWrapper(
           openAddRecipe: () => _pushRoute(context, AddRecipeScreen.routeName),
