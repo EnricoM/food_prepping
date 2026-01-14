@@ -28,6 +28,8 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   BarcodeProduct? _product;
   String? _error;
   bool _isProcessing = false;
+  String? _lastProcessedBarcode;
+  DateTime? _lastProcessedTime;
 
   bool get _isScanningSupported {
     if (kIsWeb) return false;
@@ -119,6 +121,8 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                       setState(() {
                         _product = null;
                         _error = null;
+                        _lastProcessedBarcode = null;
+                        _lastProcessedTime = null;
                       });
                     },
                     icon: const Icon(Icons.refresh_outlined),
@@ -141,9 +145,18 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
     if (value == null || value.length < 6) {
       return;
     }
+    // Prevent processing the same barcode multiple times in quick succession
+    final now = DateTime.now();
+    if (value == _lastProcessedBarcode &&
+        _lastProcessedTime != null &&
+        now.difference(_lastProcessedTime!).inSeconds < 3) {
+      return;
+    }
     setState(() {
       _isProcessing = true;
       _error = null;
+      _lastProcessedBarcode = value;
+      _lastProcessedTime = now;
     });
     try {
       await _controller.stop();
@@ -154,6 +167,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
           _error = 'No product found for $value. Try again or add manually.';
           _product = null;
         });
+        await _controller.start();
       } else {
         setState(() {
           _product = product;
