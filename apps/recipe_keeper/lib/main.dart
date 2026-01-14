@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'src/services/measurement_preferences.dart';
 import 'src/services/subscription_service.dart';
 import 'src/services/tour_service.dart';
+import 'src/services/deep_link_service.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 Future<void> main() async {
@@ -64,6 +65,13 @@ Future<void> main() async {
     await TourService.instance.init();
   } catch (e) {
     debugPrint('Error initializing tour service: $e');
+  }
+  
+  // Initialize deep link service
+  try {
+    await DeepLinkService.instance.init();
+  } catch (e) {
+    debugPrint('Error initializing deep link service: $e');
   }
   
   // Initialize AdMob with error handling

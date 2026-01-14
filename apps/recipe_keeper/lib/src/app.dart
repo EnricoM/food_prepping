@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:data/data.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import 'package:core/core.dart';
 import 'navigation/app_drawer.dart';
 import 'screens/add_recipe_screen.dart';
 import '../features/recipes/presentation/screens/add_recipe_screen.dart' as add_recipe;
+import 'services/deep_link_service.dart';
 import 'screens/domain_discovery_screen.dart';
 import 'screens/visited_domains_screen.dart';
 import 'screens/favorites_screen.dart';
@@ -36,10 +39,97 @@ import 'screens/settings_screen.dart';
 import '../features/meal_planning/presentation/screens/meal_plan_screen.dart' as meal_plan;
 import '../features/inventory/presentation/screens/inventory_screen.dart' as inventory;
 
-class RecipeParserApp extends StatelessWidget {
+class RecipeParserApp extends StatefulWidget {
   const RecipeParserApp({super.key});
 
   static const _initialRoute = HomeScreen.routeName;
+
+  @override
+  State<RecipeParserApp> createState() => _RecipeParserAppState();
+}
+
+class _RecipeParserAppState extends State<RecipeParserApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  StreamSubscription<Uri>? _deepLinkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  Future<void> _initDeepLinks() async {
+    await DeepLinkService.instance.init();
+    _deepLinkSubscription = DeepLinkService.instance.linkStream.listen(
+      (uri) {
+        _handleDeepLink(uri);
+      },
+    );
+  }
+
+  void _handleDeepLink(Uri uri) {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    // Extract URL from deep link
+    // The URL could be:
+    // - The full URI itself (if shared directly as http/https)
+    // - A query parameter like ?url=https://...
+    // - The path/query if it's a custom scheme with URL in it
+    String? url;
+    
+    if (uri.scheme == 'http' || uri.scheme == 'https') {
+      // Direct URL share - use the full URI
+      url = uri.toString();
+    } else if (uri.queryParameters.containsKey('url')) {
+      // URL in query parameter
+      url = uri.queryParameters['url'];
+    } else if (uri.path.isNotEmpty && (uri.path.startsWith('http://') || uri.path.startsWith('https://'))) {
+      // URL might be in the path (some share implementations do this)
+      url = uri.path;
+    } else if (uri.hasQuery && uri.query.isNotEmpty) {
+      // Try to find URL in query string
+      final query = uri.query;
+      // Look for http:// or https:// in the query
+      final urlMatch = RegExp(r'https?://[^\s]+').firstMatch(query);
+      if (urlMatch != null) {
+        url = urlMatch.group(0);
+      }
+    } else {
+      // Try to use the full URI as URL (for custom schemes that might contain URLs)
+      final uriString = uri.toString();
+      // Check if the URI string contains a URL
+      final urlMatch = RegExp(r'https?://[^\s]+').firstMatch(uriString);
+      if (urlMatch != null) {
+        url = urlMatch.group(0);
+      } else {
+        url = uriString;
+      }
+    }
+
+    // Validate that we have a valid URL
+    if (url != null && url.isNotEmpty) {
+      // Clean up the URL (remove trailing whitespace, fragments that might break parsing)
+      url = url.trim();
+      
+      // Validate it's actually a URL
+      final parsedUrl = Uri.tryParse(url);
+      if (parsedUrl != null && (parsedUrl.scheme == 'http' || parsedUrl.scheme == 'https')) {
+        // Navigate to add recipe screen with the URL
+        // The screen will auto-parse the URL
+        navigator.pushNamed(
+          AddRecipeScreen.routeName,
+          arguments: url,
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _deepLinkSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +139,8 @@ class RecipeParserApp extends StatelessWidget {
     );
 
     return MaterialApp(
-            title: 'Recipe Keeper',
+      navigatorKey: _navigatorKey,
+      title: 'Recipe Keeper',
       theme: ThemeData(
         colorScheme: colorScheme,
         useMaterial3: true,
@@ -170,9 +261,14 @@ class RecipeParserApp extends StatelessWidget {
               _pushRoute(context, ShoppingListScreen.routeName),
           openInventory: () => _pushRoute(context, InventoryScreen.routeName),
         ),
-        AddRecipeScreen.routeName: (context) => add_recipe.AddRecipeScreen(
-          drawer: const AppDrawer(currentRoute: AddRecipeScreen.routeName),
-        ),
+        AddRecipeScreen.routeName: (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          final url = args is String ? args : null;
+          return add_recipe.AddRecipeScreen(
+            drawer: const AppDrawer(currentRoute: AddRecipeScreen.routeName),
+            initialUrl: url,
+          );
+        },
         ManualRecipeScreen.routeName: (context) => const manual_recipe.ManualRecipeScreen(
           drawer: AppDrawer(currentRoute: ManualRecipeScreen.routeName),
         ),
